@@ -1,4 +1,4 @@
-# TCC1 - Algoritmo Contagem Passageiros
+# TCC1 - Algoritmo de Contagem Passageiros
 
 Versão experimental do algoritmo de contagem de passageiros.
 
