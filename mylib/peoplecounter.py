@@ -30,9 +30,9 @@ class PeopleCounter:
             raise ValueError("Error: model_path, videostream attributes are invalid.")
         
         # Initializations
-        self.labels = ["person"]
         self.curr_fps = 0
-        self.confidence = confidence
+        self.mdl_labels = ["person"]
+        self.mdl_confidence = confidence
         self.skip_frames = skip_frames
         self.output_path = output_path
         self.entrance_border_h = entrance_border_h
@@ -50,8 +50,6 @@ class PeopleCounter:
         self.mdl_input_mean = 127.5
         self.mdl_input_std = 127.5
         
-
-
         print("TODO")
 
     def start_counting():
