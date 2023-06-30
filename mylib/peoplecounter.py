@@ -25,9 +25,33 @@ class PeopleCounter:
                  ct_max_distance=100,
                  up_down_handler=None,
                  ):
+        
         if not model_path or not videostream:
             raise ValueError("Error: model_path, videostream attributes are invalid.")
         
+        # Initializations
+        self.labels = ["person"]
+        self.curr_fps = 0
+        self.confidence = confidence
+        self.skip_frames = skip_frames
+        self.output_path = output_path
+        self.entrance_border_h = entrance_border_h
+
+        # Load the Tensorflow Lite model into memory
+        self.mdl_interpreter = Interpreter(model_path=model_path,num_threads=num_threads)
+        self.mdl_interpreter.allocate_tensors()
+
+        # Get model details
+        self.mdl_input_details = self.interpreter.get_input_details()
+        self.mdl_output_details = self.interpreter.get_output_details()
+        self.mdl_height = self.input_details[0]['shape'][1]
+        self.mdl_width = self.input_details[0]['shape'][2]
+        self.mdl_float_input = (self.input_details[0]['dtype'] == np.float32)
+        self.mdl_input_mean = 127.5
+        self.mdl_input_std = 127.5
+        
+
+
         print("TODO")
 
     def start_counting():
