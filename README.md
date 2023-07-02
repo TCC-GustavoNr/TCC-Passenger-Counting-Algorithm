@@ -26,6 +26,8 @@ O algoritmo foi baseado em abordagem que combina detecção de pessoas (Single S
 
 - python main.py --model mobilenet_ssd/detect.tflite --skip-frames 2 --input videos/inputs/sample_2.mkv --output videos/outputs/output_4.mp4
 
+- python main.py --model mobilenet_ssd/detect.tflite --input ../videos/inputs/cut_sample_1_4.mp4 --output ../videos/outputs/output_8.mp4
+
 - python -m cProfile -s time <prog.py>
 
 - Python 3.7.16
