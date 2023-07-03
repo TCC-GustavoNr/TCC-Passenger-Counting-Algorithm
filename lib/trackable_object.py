@@ -1,6 +1,7 @@
+"""
 MIT License
 
-Copyright (c) 2020 Sai Subhakar T and Gustavo N Rodrigues
+Copyright (c) 2020 Sai Subhakar T
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +20,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+"""
+
+class TrackableObject:
+	def __init__(self, objectID, centroid):
+		# store the object ID, then initialize a list of centroids
+		# using the current centroid
+		self.objectID = objectID
+		self.centroids = [centroid]
+
+		# initialize a boolean used to indicate if the object has
+		# already been counted or not
+		self.counted = False

@@ -1,7 +1,7 @@
-from mylib.centroid_tracker import CentroidTracker
-from mylib.trackable_object import TrackableObject
-from mylib.updown_event import UpDownEvents, UpDownEventHandler
-from mylib.debounce import debounce
+from lib.centroid_tracker import CentroidTracker
+from lib.trackable_object import TrackableObject
+from lib.updown_event import UpDownEvents, UpDownEventHandler
+from lib.debounce import debounce
 from imutils.video import FPS
 import numpy as np
 import dlib
@@ -184,10 +184,11 @@ class PeopleCounter:
         self.stop_required = True
 
     def get_current_fps(self):
-        try:
-            return self.fps.fps() 
-        except:
-            return None
+        fps = None
+        if self.fps is not None:
+            self.fps.stop()
+            fps = round(self.fps.fps())
+        return fps
         
     def _tflite_detection(self, input_data):
         # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
@@ -220,14 +221,15 @@ class PeopleCounter:
                 y = [c[1] for c in tckb_obj.centroids]
                 direction = centroid[1] - np.mean(y)
                 tckb_obj.centroids.append(centroid)
-                
+                crossed = True if np.min(y) < entrance_border_y and np.max(y) > entrance_border_y else False
+
                 if not tckb_obj.counted:
                     # The object went up 
-                    if direction < 0 and centroid[1] < entrance_border_y:
+                    if direction < 0 and crossed and centroid[1] < entrance_border_y:
                         count_up += 1
                         tckb_obj.counted = True
                     # The object went down 
-                    elif direction > 0 and centroid[1] > entrance_border_y:
+                    elif direction > 0 and crossed and centroid[1] > entrance_border_y:
                         count_down += 1
                         tckb_obj.counted = True
 
@@ -296,7 +298,12 @@ class PeopleCounter:
         cv2.line(frame, (0, entrance_border_y), (self.video_width, entrance_border_y), (0, 255, 0), 2)
 
     def _draw_state_info(self, frame):
-        info = [("FPS", self.get_current_fps()), ("Down", self.total_down), ("Up", self.total_up)]
+        info = [
+            ("Skip_Frames", self.skip_frames), 
+            ("FPS", self.get_current_fps()), 
+            ("Down", self.total_down), 
+            ("Up", self.total_up)
+            ]
         for (i, (k, v)) in enumerate(info):
             text = "{}: {}".format(k, v)
             cv2.putText(frame, text, (10, self.video_height - ((i * 20) + 50)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)

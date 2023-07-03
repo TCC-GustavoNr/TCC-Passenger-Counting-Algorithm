@@ -1,8 +1,8 @@
 import cv2
 import argparse
 import multiprocessing
-from mylib.people_counter import PeopleCounter
-from mylib.updown_event import UpDownEventHandler
+from lib.people_counter import PeopleCounter
+from lib.updown_event import UpDownEventHandler
 
 def parse_arguments():
     # construct the argument parse and parse the arguments
@@ -15,7 +15,7 @@ def parse_arguments():
                     help="path to optional output video file")
     ap.add_argument("-c", "--confidence", type=float, default=0.8,
                     help="minimum probability to filter weak detections")
-    ap.add_argument("-s", "--skip-frames", type=int, default=3,
+    ap.add_argument("-s", "--skip-frames", type=int, default=10,
                     help="# of skip frames between detections")
     args = vars(ap.parse_args())
     return args
@@ -23,30 +23,31 @@ def parse_arguments():
 def handle_up_down_event(data):
     print('Event: ', data)
 
-args = parse_arguments()
+if __name__ == '__main__':
 
-videostream = cv2.VideoCapture(args["input"])
+    args = parse_arguments()
 
-people_counter = PeopleCounter(model_path=args["model"],
-                               confidence=args["confidence"],
-                               num_threads=multiprocessing.cpu_count(),
-                               videostream=videostream,
-                               skip_frames=args["skip_frames"],
-                               output_file=args["output"],
-                               ct_max_distance=300,
-                               ct_max_disappeared=30,
-                               up_down_handler=(UpDownEventHandler(handle_up_down_event, 6))
-                               )
+    videostream = cv2.VideoCapture(args["input"])
 
-print("Iniciando contagem...")
-people_counter.start_counting()
-print("Contagem finalizada...")
-print("FPS: ", people_counter.get_current_fps())
+    people_counter = PeopleCounter(model_path=args["model"],
+                                confidence=args["confidence"],
+                                num_threads=multiprocessing.cpu_count(),
+                                videostream=videostream,
+                                skip_frames=args["skip_frames"],
+                                output_file=args["output"],
+                                ct_max_distance=60,
+                                ct_max_disappeared=30,
+                                up_down_handler=(UpDownEventHandler(handle_up_down_event, 5))
+                                )
+
+    print("Iniciando contagem...")
+    people_counter.start_counting()
+    print("Contagem finalizada...")
+    print("FPS: ", people_counter.get_current_fps())
 
 """
 TODO
 
 - update_open_event -> increment logic
-- get_current_fps -> get_fps_rate
 - ajuste do centroid tracker
 """
