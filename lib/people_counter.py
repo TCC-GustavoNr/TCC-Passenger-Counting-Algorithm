@@ -43,7 +43,7 @@ class PeopleCounter:
         self.updown_events = UpDownEvents()
         self.centroid_tracker = CentroidTracker(maxDisappeared=ct_max_disappeared, maxDistance=ct_max_distance)
         self.trackable_objects = {} # TrackableObject
-
+        
         # Load the Tensorflow Lite model into memory
         self.mdl_interpreter = Interpreter(model_path=model_path,num_threads=num_threads)
         self.mdl_interpreter.allocate_tensors()
@@ -131,9 +131,11 @@ class PeopleCounter:
                 # Loop over the trackers
                 for tracker in correlation_trackers:
                     # Update the tracker and grab the updated position
-                    tracker.update(image_rgb)
+                    cf = tracker.update(image_rgb)
                     pos = tracker.get_position()
-
+                    print(f"confidence correlation: {cf}")
+                    self._draw_bounding_box(frame, (int(pos.left()), int(pos.top())), (int(pos.right()), int(pos.bottom())), label, color=(200,0,0))
+                    
                     # Add the bounding box coordinates to the rectangles list
                     rects_list.append((int(pos.left()), int(pos.top()), int(pos.right()), int(pos.bottom())))
 
@@ -269,11 +271,11 @@ class PeopleCounter:
         
         return count_up, count_down
 
-    def _draw_bounding_box(self, frame, pmin, pmax, label='person'):
+    def _draw_bounding_box(self, frame, pmin, pmax, label='person', color=(0, 255, 0)):
         xmin, ymin = pmin
         xmax, ymax = pmax
         # Draw bounding box
-        cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 2)
+        cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color, 2)
 
         # Draw label
         labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)  # Get font size
@@ -287,17 +289,18 @@ class PeopleCounter:
         # Draw label text
         cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)  
 
-    def _draw_centroid(self, frame, centroid, label):
+    def _draw_centroid(self, frame, centroid, label, color=(0, 255, 0)):
         px, py = centroid
-        cv2.putText(frame, label, (px - 10, py - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        cv2.circle(frame, (px, py), 4, (0, 255, 0), -1)
+        cv2.putText(frame, label, (px - 10, py - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        cv2.circle(frame, (px, py), 4, color, -1)
+        cv2.circle(frame, (px, py), 4 + self.centroid_tracker.maxDistance, (0, 0, 255), 2)
 
-    def _draw_entrance_border(self, frame):
+    def _draw_entrance_border(self, frame, color=(0, 255, 0)):
         # Draw entrance border - once an object crosses this line we will determine whether they were moving 'up' or 'down'
         entrance_border_y = round(self.entrance_border_h * self.video_height)
-        cv2.line(frame, (0, entrance_border_y), (self.video_width, entrance_border_y), (0, 255, 0), 2)
+        cv2.line(frame, (0, entrance_border_y), (self.video_width, entrance_border_y), color, 2)
 
-    def _draw_state_info(self, frame):
+    def _draw_state_info(self, frame, color=(0, 255, 0)):
         info = [
             ("Skip_Frames", self.skip_frames), 
             ("FPS", self.get_current_fps()), 
@@ -306,4 +309,4 @@ class PeopleCounter:
             ]
         for (i, (k, v)) in enumerate(info):
             text = "{}: {}".format(k, v)
-            cv2.putText(frame, text, (10, self.video_height - ((i * 20) + 50)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            cv2.putText(frame, text, (10, self.video_height - ((i * 20) + 50)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)

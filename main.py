@@ -51,3 +51,36 @@ TODO
 - update_open_event -> increment logic
 - ajuste do centroid tracker
 """
+
+"""
+correlation 
+	update: img_rgb, boxes
+
+centroid
+	update: boxes
+	ct_max_disappeared =>
+	ct_max_distance    =>
+
+sort
+	update: boxes, scores
+	max_age=1  	  => Maximum number of frames to keep alive a track without associated detections.	
+	min_hits=3	  => Minimum number of associated detections before track is initialised.
+	iou_threshold=0.3 => Minimum IOU for match.
+
+ct_max_disappeared = ct_max_distance
+iou_threshold é uma versao mais inteligente do ct_max_distance
+
+Detection(box, score, label)
+
+correlation: 
+	update: Detections, img_rgb -> 
+	
+
+centroid: 
+	update: Detections -> 
+
+sort: 
+	update: Detections -> 
+
+- viabilidade de ignorar score 
+"""
