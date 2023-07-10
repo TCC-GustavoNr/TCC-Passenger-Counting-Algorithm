@@ -15,7 +15,7 @@ def parse_arguments():
                     help="path to optional output video file")
     ap.add_argument("-c", "--confidence", type=float, default=0.8,
                     help="minimum probability to filter weak detections")
-    ap.add_argument("-s", "--skip-frames", type=int, default=10,
+    ap.add_argument("-s", "--skip-frames", type=int, default=1,
                     help="# of skip frames between detections")
     args = vars(ap.parse_args())
     return args
@@ -50,6 +50,11 @@ TODO
 
 - update_open_event -> increment logic
 - ajuste do centroid tracker
+
+- add sort tracker
+- entrance_border
+- entrance_direction (TOP_TO_BOTTOM | BOTTOM_TO_TOP)
+- adaptar para 0 skip_frames
 """
 
 """

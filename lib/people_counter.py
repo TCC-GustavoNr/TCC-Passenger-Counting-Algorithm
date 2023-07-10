@@ -133,7 +133,7 @@ class PeopleCounter:
                     # Update the tracker and grab the updated position
                     cf = tracker.update(image_rgb)
                     pos = tracker.get_position()
-                    print(f"confidence correlation: {cf}")
+                    #print(f"confidence correlation: {cf}")
                     self._draw_bounding_box(frame, (int(pos.left()), int(pos.top())), (int(pos.right()), int(pos.bottom())), label, color=(200,0,0))
                     
                     # Add the bounding box coordinates to the rectangles list
