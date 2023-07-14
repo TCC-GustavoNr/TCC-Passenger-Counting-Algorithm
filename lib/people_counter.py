@@ -16,7 +16,7 @@ class PeopleCounter:
                  videostream=None, 
                  skip_frames=5, 
                  output_file=None,
-                 entrance_border_h=0.5,
+                 entrance_border=0.5,
                  ct_max_disappeared=60,
                  ct_max_distance=100,
                  up_down_handler: UpDownEventHandler = None,
@@ -32,7 +32,7 @@ class PeopleCounter:
         self.confidence = confidence
         self.skip_frames = skip_frames
         self.output_file = output_file
-        self.entrance_border_h = entrance_border_h
+        self.entrance_border = entrance_border
         self.total_frames = 0
         self.total_up = 0
         self.total_down = 0
@@ -115,7 +115,7 @@ class PeopleCounter:
                         # Draw object bounding box
                         if self.output_file is not None:
                             label = f'{self.labels[int(classes[i])]}: {int(scores[i]*100)}%' # Example: 'person: 72%'
-                            self._draw_bounding_box(frame, (xmin, ymin), (xmax, ymax), label)
+                            #self._draw_bounding_box(frame, (xmin, ymin), (xmax, ymax), label)
                         
                         # Construct a dlib rectangle object from the bounding box coordinates and then start the dlib correlation tracker
                         tracker = dlib.correlation_tracker()
@@ -134,7 +134,7 @@ class PeopleCounter:
                     cf = tracker.update(image_rgb)
                     pos = tracker.get_position()
                     #print(f"confidence correlation: {cf}")
-                    self._draw_bounding_box(frame, (int(pos.left()), int(pos.top())), (int(pos.right()), int(pos.bottom())), label, color=(200,0,0))
+                    #self._draw_bounding_box(frame, (int(pos.left()), int(pos.top())), (int(pos.right()), int(pos.bottom())), label, color=(200,0,0))
                     
                     # Add the bounding box coordinates to the rectangles list
                     rects_list.append((int(pos.left()), int(pos.top()), int(pos.right()), int(pos.bottom())))
@@ -154,6 +154,7 @@ class PeopleCounter:
                 print("Count update: ", count_up, count_down)
                 if not self.updown_events.has_open_event():
                     self.updown_events.register_new_event()
+
                 self.updown_events.update_open_event(count_up, count_down)
                 
                 if self.up_down_event_handler is not None:
@@ -209,7 +210,7 @@ class PeopleCounter:
         return boxes, classes, scores
     
     def _count_updown_of_tracked_objects(self, objects):
-        entrance_border_y = round(self.entrance_border_h * self.video_height)
+        entrance_border_y = round(self.entrance_border * self.video_height)
         count_up = count_down = 0
 
         for (object_id, centroid) in objects.items():
@@ -241,7 +242,7 @@ class PeopleCounter:
         return count_up, count_down
 
     def _count_updown_of_tracked_objects_2(self, objects):
-        entrance_border_y = round(self.entrance_border_h * self.video_height)
+        entrance_border_y = round(self.entrance_border * self.video_height)
         count_up = count_down = 0
 
         for (object_id, centroid) in objects.items():
@@ -293,11 +294,11 @@ class PeopleCounter:
         px, py = centroid
         cv2.putText(frame, label, (px - 10, py - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         cv2.circle(frame, (px, py), 4, color, -1)
-        cv2.circle(frame, (px, py), 4 + self.centroid_tracker.maxDistance, (0, 0, 255), 2)
+        #cv2.circle(frame, (px, py), 4 + self.centroid_tracker.maxDistance, (0, 0, 255), 2)
 
     def _draw_entrance_border(self, frame, color=(0, 255, 0)):
         # Draw entrance border - once an object crosses this line we will determine whether they were moving 'up' or 'down'
-        entrance_border_y = round(self.entrance_border_h * self.video_height)
+        entrance_border_y = round(self.entrance_border * self.video_height)
         cv2.line(frame, (0, entrance_border_y), (self.video_width, entrance_border_y), color, 2)
 
     def _draw_state_info(self, frame, color=(0, 255, 0)):
@@ -309,4 +310,4 @@ class PeopleCounter:
             ]
         for (i, (k, v)) in enumerate(info):
             text = "{}: {}".format(k, v)
-            cv2.putText(frame, text, (10, self.video_height - ((i * 20) + 50)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+            cv2.putText(frame, text, (10, self.video_height - ((i * 20) + 20)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
