@@ -1,13 +1,17 @@
-from lib.centroid_tracker import CentroidTracker
+import cv2
+import numpy as np
+from enum import Enum
+from typing import List
+from imutils.video import FPS
+from lib.debounce import debounce
 from lib.trackable_object import TrackableObject
 from lib.updown_event import UpDownEvents, UpDownEventHandler
-from lib.debounce import debounce
-from imutils.video import FPS
-import numpy as np
-import dlib
-import cv2
+from lib.trackers import AbstractTracker, DetectedObject, TrackedObject
 from tensorflow.lite.python.interpreter import Interpreter
 
+class EntranceDirection(Enum):
+    TOP_TO_BOTTOM = 1 
+    BOTTOM_TO_TOP = 2
 class PeopleCounter:
     def __init__(self, 
                  model_path=None, 
@@ -17,13 +21,13 @@ class PeopleCounter:
                  skip_frames=5, 
                  output_file=None,
                  entrance_border=0.5,
-                 ct_max_disappeared=60,
-                 ct_max_distance=100,
-                 up_down_handler: UpDownEventHandler = None,
+                 entrance_direction:EntranceDirection=EntranceDirection.TOP_TO_BOTTOM,
+                 object_tracker:AbstractTracker=None,
+                 up_down_handler:UpDownEventHandler=None,
                 ):
         
-        if not model_path or not videostream:
-            raise ValueError("Error: model_path, videostream attributes are invalid.")
+        if model_path is None or videostream is None or object_tracker is None:
+            raise ValueError("Error: model_path, videostream, object_tracker attributes are invalid.")
         
         # Initializations
         self.fps = None
@@ -41,7 +45,8 @@ class PeopleCounter:
         self.video_writer = None
         self.stop_required = False
         self.updown_events = UpDownEvents()
-        self.centroid_tracker = CentroidTracker(maxDisappeared=ct_max_disappeared, maxDistance=ct_max_distance)
+        self.object_tracker = object_tracker
+        self.entrance_direction = entrance_direction
         self.trackable_objects = {} # TrackableObject
         
         # Load the Tensorflow Lite model into memory
@@ -68,13 +73,12 @@ class PeopleCounter:
 
     def start_counting(self):
         self.stop_required = False
-        correlation_trackers = [] # dlib correlation trackers
 
         # Start the frames per second throughput estimator
         self.fps = FPS().start()
 
         while not self.stop_required:
-            rects_list = []
+            detected_objects: List[DetectedObject] = []
 
             frame = self.videostream.read()[1]
             
@@ -96,9 +100,7 @@ class PeopleCounter:
                 self.video_writer = cv2.VideoWriter(self.output_file, fourcc, 30, (self.video_width, self.video_height), True)
 
             # Check to see if we should run a more computationally expensive object detection method to aid our tracker
-            if self.total_frames % self.skip_frames == 0:
-                correlation_trackers = []
-                
+            if self.total_frames % self.skip_frames == 0:              
                 # Object Detection
                 boxes, classes, scores = self._tflite_detection(input_data)
 
@@ -112,38 +114,19 @@ class PeopleCounter:
                         ymax = int(min(self.video_height, (boxes[i][2] * self.video_height)))
                         xmax = int(min(self.video_width, (boxes[i][3] * self.video_width)))
 
+                        # Append new detected object
+                        detected_objects.append(DetectedObject((xmin, ymin), (xmax, ymax)))
+
                         # Draw object bounding box
                         if self.output_file is not None:
                             label = f'{self.labels[int(classes[i])]}: {int(scores[i]*100)}%' # Example: 'person: 72%'
-                            #self._draw_bounding_box(frame, (xmin, ymin), (xmax, ymax), label)
+                            self._draw_bounding_box(frame, (xmin, ymin), (xmax, ymax), label)
                         
-                        # Construct a dlib rectangle object from the bounding box coordinates and then start the dlib correlation tracker
-                        tracker = dlib.correlation_tracker()
-                        rect = dlib.rectangle(xmin, ymin, xmax, ymax)
-                        tracker.start_track(image_rgb, rect)
-
-                        # Add the tracker to our list of trackers so we can utilize it during skip frames
-                        correlation_trackers.append(tracker)
-                
-            # Otherwise, we use the *correlation_trackers* objects instead of performing a redetection, 
-            # thus achieving a higher frame processing rate
-            else:
-                # Loop over the trackers
-                for tracker in correlation_trackers:
-                    # Update the tracker and grab the updated position
-                    cf = tracker.update(image_rgb)
-                    pos = tracker.get_position()
-                    #print(f"confidence correlation: {cf}")
-                    #self._draw_bounding_box(frame, (int(pos.left()), int(pos.top())), (int(pos.right()), int(pos.bottom())), label, color=(200,0,0))
-                    
-                    # Add the bounding box coordinates to the rectangles list
-                    rects_list.append((int(pos.left()), int(pos.top()), int(pos.right()), int(pos.bottom())))
-
-            # Use the centroid tracker to associate the old object centroids with the newly computed object centroids
-            objects = self.centroid_tracker.update(rects_list)
+            # Use the tracker to associate the old object with the newly computed object
+            tracked_objects = self.object_tracker.update(detected_objects, image_rgb)
             
             # Count up and down of currently tracked objects
-            count_up, count_down = self._count_updown_of_tracked_objects(objects)
+            count_up, count_down = self._count_updown_of_tracked_objects(tracked_objects)
 
             # Update total counts
             self.total_up += count_up
@@ -162,8 +145,8 @@ class PeopleCounter:
             
             # Draw centroid of tracked objects
             if self.video_writer is not None:
-                for (object_id, centroid) in objects.items():
-                    self._draw_centroid(frame, centroid, f'ID:{object_id}')
+                for object in tracked_objects:
+                    self._draw_centroid(frame, object.centroid, f'ID:{object.object_id}')
 
             # Draw static/fixed contents
             if self.video_writer is not None:
@@ -209,11 +192,13 @@ class PeopleCounter:
 
         return boxes, classes, scores
     
-    def _count_updown_of_tracked_objects(self, objects):
+    def _count_updown_of_tracked_objects(self, tracked_objects: List[TrackedObject]):
         entrance_border_y = round(self.entrance_border * self.video_height)
         count_up = count_down = 0
 
-        for (object_id, centroid) in objects.items():
+        for tracked_object in tracked_objects:
+            centroid = tracked_object.centroid
+            object_id = tracked_object.object_id
             tckb_obj = self.trackable_objects.get(object_id, None)
 
             if tckb_obj is None:
@@ -233,37 +218,6 @@ class PeopleCounter:
                         tckb_obj.counted = True
                     # The object went down 
                     elif direction > 0 and crossed and centroid[1] > entrance_border_y:
-                        count_down += 1
-                        tckb_obj.counted = True
-
-            # Store the trackable object in our dictionary
-            self.trackable_objects[object_id] = tckb_obj
-        
-        return count_up, count_down
-
-    def _count_updown_of_tracked_objects_2(self, objects):
-        entrance_border_y = round(self.entrance_border * self.video_height)
-        count_up = count_down = 0
-
-        for (object_id, centroid) in objects.items():
-            tckb_obj = self.trackable_objects.get(object_id, None)
-
-            if tckb_obj is None:
-                tckb_obj = TrackableObject(object_id, centroid)
-            else:
-                # The difference between the y-coordinate of the *current* centroid and the mean of *previous* centroids 
-                # will tell us in which direction the object is moving (negative for 'up' and positive for 'down').
-                y = [c[1] for c in tckb_obj.centroids]
-                direction = centroid[1] - np.mean(y)
-                tckb_obj.centroids.append(centroid)
-                
-                if not tckb_obj.counted:
-                    # The object went up 
-                    if direction < 0 and centroid[1] < entrance_border_y:
-                        count_up += 1
-                        tckb_obj.counted = True
-                    # The object went down 
-                    elif direction > 0 and centroid[1] > entrance_border_y:
                         count_down += 1
                         tckb_obj.counted = True
 

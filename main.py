@@ -1,7 +1,8 @@
 import cv2
 import argparse
 import multiprocessing
-from lib.people_counter import PeopleCounter
+from lib.people_counter import PeopleCounter, EntranceDirection
+from lib.trackers import ConcreteCentroidTracker, ConcreteSortTracker
 from lib.updown_event import UpDownEventHandler
 
 def parse_arguments():
@@ -13,7 +14,7 @@ def parse_arguments():
                     help="path to optional input video file")
     ap.add_argument("-o", "--output", type=str,
                     help="path to optional output video file")
-    ap.add_argument("-c", "--confidence", type=float, default=0.8,
+    ap.add_argument("-c", "--confidence", type=float, default=0.9,
                     help="minimum probability to filter weak detections")
     ap.add_argument("-s", "--skip-frames", type=int, default=5,
                     help="# of skip frames between detections")
@@ -29,14 +30,18 @@ if __name__ == '__main__':
 
     videostream = cv2.VideoCapture(args["input"])
 
-    people_counter = PeopleCounter(model_path=args["model"],
+    tracker = ConcreteCentroidTracker(max_disappeared=30, max_distance=50)
+
+    # tracker = ConcreteSortTracker(max_age=40, min_hits=5)
+
+    people_counter = PeopleCounter(
+                                model_path=args["model"],
                                 confidence=args["confidence"],
                                 num_threads=multiprocessing.cpu_count(),
                                 videostream=videostream,
                                 skip_frames=args["skip_frames"],
                                 output_file=args["output"],
-                                ct_max_distance=60,
-                                ct_max_disappeared=30,
+                                object_tracker=tracker,
                                 up_down_handler=(UpDownEventHandler(handle_up_down_event, 5))
                                 )
 
@@ -51,74 +56,9 @@ TODO
 - update_open_event -> increment logic
 - ajuste do centroid tracker
 
-- add sort tracker
-- entrance_border
+- add generic tracker (ok)
+- entrance_border (ok)
 - entrance_direction (TOP_TO_BOTTOM | BOTTOM_TO_TOP)
 - adaptar para 0 skip_frames
 - get stream of rpi camera
-"""
-
-"""
-correlation 
-	update: img_rgb, boxes
-
-centroid
-	update: boxes
-	ct_max_disappeared =>
-	ct_max_distance    =>
-
-sort
-	update: boxes, scores
-	max_age=1  	  => Maximum number of frames to keep alive a track without associated detections.	
-	min_hits=3	  => Minimum number of associated detections before track is initialised.
-	iou_threshold=0.3 => Minimum IOU for match.
-
-ct_max_disappeared = ct_max_distance
-iou_threshold é uma versao mais inteligente do ct_max_distance
-
-Detection(box, score, label)
-
-correlation: 
-	update: Detections, img_rgb -> 
-	
-
-centroid: 
-	update: Detections -> 
-
-sort: 
-	update: Detections -> 
-
-- viabilidade de ignorar score (aparentemente o sort nao usa score)
-
--------
-
-PeopleCounter -> recebe objeto tracker como parametro
-
-Tracker Generico (Super Class) (Abstract class)
-    - init() -> 
-    - update()
-        - no skip_frames
-            (box, img_rgb)
-        - skip_frames
-    - (sort / centroid) tracker
-
-update
-    - centroid
-        - y_new_pos(box)[]: retorna os objetos considerando new, matched, unmatched objects
-        - n_new_pos()[]: retorna os objetos ja rastreados (sem estimativa de deslocamento)
-        - return: id, centroid
-    - sort
-        - y_new_pos(box, score)[]: retorna os objetos considerando new, matched, unmatched objects
-        - n_new_pos()[]: retorna os objetos ja rastreados (com estimativa de deslocamento)
-        - return: id, box, score 
-    - correlation
-        - y_new_pos(box, img_rgb)[]: start tracker do objeto
-        - n_new_pos(img_rgb)[]: retorna estimativa da nova posticao do objeto
-        - return: box
-
-template_method(GenericDectection[]) 
-    ret = update_abstract_method(GenericDectection[])
-    # ret typeof (GenericNewPos[])
-
-para implementacos com correlation tracker, as ConcreteClasses devem armazenar trackers de correlacao durante os casos de n_new_pos
 """
