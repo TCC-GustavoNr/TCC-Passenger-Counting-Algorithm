@@ -16,7 +16,7 @@ def parse_arguments():
                     help="path to optional output video file")
     ap.add_argument("-c", "--confidence", type=float, default=0.9,
                     help="minimum probability to filter weak detections")
-    ap.add_argument("-s", "--skip-frames", type=int, default=5,
+    ap.add_argument("-s", "--skip-frames", type=int, default=10,
                     help="# of skip frames between detections")
     args = vars(ap.parse_args())
     return args
@@ -30,9 +30,9 @@ if __name__ == '__main__':
 
     videostream = cv2.VideoCapture(args["input"])
 
-    tracker = ConcreteCentroidTracker(max_disappeared=30, max_distance=50)
+    # tracker = ConcreteCentroidTracker(max_disappeared=30, max_distance=50)
 
-    # tracker = ConcreteSortTracker(max_age=40, min_hits=5)
+    tracker = ConcreteSortTracker(max_age=40, min_hits=5)
 
     people_counter = PeopleCounter(
                                 model_path=args["model"],
@@ -42,6 +42,8 @@ if __name__ == '__main__':
                                 skip_frames=args["skip_frames"],
                                 output_file=args["output"],
                                 object_tracker=tracker,
+                                entrance_border=0.5,
+                                entrance_direction=EntranceDirection.TOP_TO_BOTTOM,
                                 up_down_handler=(UpDownEventHandler(handle_up_down_event, 5))
                                 )
 
@@ -54,11 +56,11 @@ if __name__ == '__main__':
 TODO
 
 - update_open_event -> increment logic
-- ajuste do centroid tracker
 
 - add generic tracker (ok)
 - entrance_border (ok)
-- entrance_direction (TOP_TO_BOTTOM | BOTTOM_TO_TOP)
-- adaptar para 0 skip_frames
+- entrance_direction (TOP_TO_BOTTOM | BOTTOM_TO_TOP) (ok)
+- adaptar para 0 skip_frames (ok)
 - get stream of rpi camera
+- tratar mesmo objeto sobe e desce 
 """

@@ -18,6 +18,12 @@ class TrackedObject:
         self.box_end = box_end
         self.centroid = (int((box_start[0] + box_end[0]) / 2.0), int((box_start[1] + box_end[1]) / 2.0))
 
+class ObjectTracking:
+	def __init__(self, object_id, centroid):
+		self.object_id = object_id
+		self.centroids = [centroid] # to store object tracking centroids (path of object)
+		self.counted = False # indicate if the object has already been counted or not
+
 class DlibCorrelationTracker:
     # The correlation_tracker objects instead of performing a redetection, thus achieving a higher frame processing rate
     def __init__(self) -> None:

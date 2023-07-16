@@ -4,9 +4,8 @@ from enum import Enum
 from typing import List
 from imutils.video import FPS
 from lib.debounce import debounce
-from lib.trackable_object import TrackableObject
 from lib.updown_event import UpDownEvents, UpDownEventHandler
-from lib.trackers import AbstractTracker, DetectedObject, TrackedObject
+from lib.trackers import AbstractTracker, DetectedObject, TrackedObject, ObjectTracking
 from tensorflow.lite.python.interpreter import Interpreter
 
 class EntranceDirection(Enum):
@@ -36,7 +35,9 @@ class PeopleCounter:
         self.confidence = confidence
         self.skip_frames = skip_frames
         self.output_file = output_file
+        self.object_tracker = object_tracker
         self.entrance_border = entrance_border
+        self.entrance_direction = entrance_direction
         self.total_frames = 0
         self.total_up = 0
         self.total_down = 0
@@ -45,9 +46,7 @@ class PeopleCounter:
         self.video_writer = None
         self.stop_required = False
         self.updown_events = UpDownEvents()
-        self.object_tracker = object_tracker
-        self.entrance_direction = entrance_direction
-        self.trackable_objects = {} # TrackableObject
+        self.object_tracking = {} # ObjectTracking
         
         # Load the Tensorflow Lite model into memory
         self.mdl_interpreter = Interpreter(model_path=model_path,num_threads=num_threads)
@@ -114,7 +113,7 @@ class PeopleCounter:
                         ymax = int(min(self.video_height, (boxes[i][2] * self.video_height)))
                         xmax = int(min(self.video_width, (boxes[i][3] * self.video_width)))
 
-                        # Append new detected object
+                        # Append the new detected object
                         detected_objects.append(DetectedObject((xmin, ymin), (xmax, ymax)))
 
                         # Draw object bounding box
@@ -199,30 +198,35 @@ class PeopleCounter:
         for tracked_object in tracked_objects:
             centroid = tracked_object.centroid
             object_id = tracked_object.object_id
-            tckb_obj = self.trackable_objects.get(object_id, None)
+            tckb_obj = self.object_tracking.get(object_id, None)
 
             if tckb_obj is None:
-                tckb_obj = TrackableObject(object_id, centroid)
+                tckb_obj = ObjectTracking(object_id, centroid)
             else:
                 # The difference between the y-coordinate of the *current* centroid and the mean of *previous* centroids 
                 # will tell us in which direction the object is moving (negative for 'up' and positive for 'down').
                 y = [c[1] for c in tckb_obj.centroids]
-                direction = centroid[1] - np.mean(y)
                 tckb_obj.centroids.append(centroid)
-                crossed = True if np.min(y) < entrance_border_y and np.max(y) > entrance_border_y else False
+
+                direction = centroid[1] - np.mean(y)
+                crossed   = True if np.min(y) < entrance_border_y and np.max(y) > entrance_border_y else False
+                went_up   = (crossed and 
+                            (self.entrance_direction == EntranceDirection.BOTTOM_TO_TOP and direction < 0 or 
+                             self.entrance_direction == EntranceDirection.TOP_TO_BOTTOM and direction > 0))
+                went_down = (crossed and 
+                            (self.entrance_direction == EntranceDirection.BOTTOM_TO_TOP and direction > 0 or 
+                             self.entrance_direction == EntranceDirection.TOP_TO_BOTTOM and direction < 0))
 
                 if not tckb_obj.counted:
-                    # The object went up 
-                    if direction < 0 and crossed and centroid[1] < entrance_border_y:
+                    if went_up:
                         count_up += 1
                         tckb_obj.counted = True
-                    # The object went down 
-                    elif direction > 0 and crossed and centroid[1] > entrance_border_y:
+                    elif went_down:
                         count_down += 1
                         tckb_obj.counted = True
 
             # Store the trackable object in our dictionary
-            self.trackable_objects[object_id] = tckb_obj
+            self.object_tracking[object_id] = tckb_obj
         
         return count_up, count_down
 
@@ -248,7 +252,7 @@ class PeopleCounter:
         px, py = centroid
         cv2.putText(frame, label, (px - 10, py - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         cv2.circle(frame, (px, py), 4, color, -1)
-        #cv2.circle(frame, (px, py), 4 + self.centroid_tracker.maxDistance, (0, 0, 255), 2)
+        # cv2.circle(frame, (px, py), 4 + self.centroid_tracker.maxDistance, (0, 0, 255), 2)
 
     def _draw_entrance_border(self, frame, color=(0, 255, 0)):
         # Draw entrance border - once an object crosses this line we will determine whether they were moving 'up' or 'down'
