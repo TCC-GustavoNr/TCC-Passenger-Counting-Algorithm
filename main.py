@@ -16,7 +16,7 @@ def parse_arguments():
                     help="path to optional output video file")
     ap.add_argument("-c", "--confidence", type=float, default=0.9,
                     help="minimum probability to filter weak detections")
-    ap.add_argument("-s", "--skip-frames", type=int, default=10,
+    ap.add_argument("-s", "--skip-frames", type=int, default=15,
                     help="# of skip frames between detections")
     args = vars(ap.parse_args())
     return args
@@ -32,7 +32,9 @@ if __name__ == '__main__':
 
     # tracker = ConcreteCentroidTracker(max_disappeared=30, max_distance=50)
 
-    tracker = ConcreteSortTracker(max_age=40, min_hits=5)
+    # tracker = ConcreteSortTracker(max_age=40, min_hits=5)
+
+    tracker = ConcreteSortTracker(max_age=30, min_hits=3)
 
     people_counter = PeopleCounter(
                                 model_path=args["model"],
@@ -43,7 +45,7 @@ if __name__ == '__main__':
                                 output_file=args["output"],
                                 object_tracker=tracker,
                                 entrance_border=0.5,
-                                entrance_direction=EntranceDirection.TOP_TO_BOTTOM,
+                                entrance_direction=EntranceDirection.BOTTOM_TO_TOP,
                                 up_down_handler=(UpDownEventHandler(handle_up_down_event, 5))
                                 )
 

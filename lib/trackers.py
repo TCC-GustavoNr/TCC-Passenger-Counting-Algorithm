@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import dlib
 import numpy as np
 from cv2 import Mat
-from typing import List
+from typing import List, Union
 from lib.centroid_tracker import CentroidTracker
 from lib.sort_tracker import Sort as SortTracker
 
@@ -30,7 +30,7 @@ class DlibCorrelationTracker:
         self.correlation_trackers = []
 
     def start_correlation_tracker(self, detections: List[DetectedObject], frame_rgb: Mat) -> None:
-        self.correlation_trackers = []
+        self.correlation_trackers.clear()
         for detection in detections:
             xmin, ymin = detection.box_start
             xmax, ymax = detection.box_end
@@ -52,8 +52,16 @@ class DlibCorrelationTracker:
         return updated_positions
 
 class AbstractTracker(ABC):
+    """
+    @param detections: current frame detection list
+        None   : when there is no detection in the current frame
+        len = 0: when there is detection in the current frame, but no object is found
+        len > 0: when there is detection in the current frame and objects are found
+    @param frame_rgb: current frame rbg matrix (cv2 format)
+    @return: list of tracked objects with updated positions
+    """
     @abstractmethod
-    def update(self, detections: List[DetectedObject], frame_rgb: Mat) -> List[TrackedObject]: 
+    def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
         pass
 
 class ConcreteCentroidTracker(AbstractTracker):
@@ -62,14 +70,16 @@ class ConcreteCentroidTracker(AbstractTracker):
         self.tracker = CentroidTracker(maxDisappeared=max_disappeared, maxDistance=max_distance)
         self.correlation_tracker = DlibCorrelationTracker()
 
-    def update(self, detections: List[DetectedObject], frame_rgb: Mat) -> List[TrackedObject]: 
+    def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
         detected_objs = []
- 
-        if detections:
-            detected_objs = detections
-            self.correlation_tracker.start_correlation_tracker(detections, frame_rgb)
-        else:
+
+        if detections is None:
             detected_objs = self.correlation_tracker.update_correlation_tracker(frame_rgb)
+        elif len(detections) == 0:
+            self.correlation_tracker.correlation_trackers.clear()
+        else:
+            detected_objs = detections
+            self.correlation_tracker.start_correlation_tracker(detected_objs, frame_rgb)
         
         # tracker_inputs: [(x1, y1, x2, y2), ... ]
         tracker_inputs = list(map(lambda d : (d.box_start[0], d.box_start[1], d.box_end[0], d.box_end[1]), detected_objs))
@@ -87,20 +97,25 @@ class ConcreteSortTracker(AbstractTracker):
         self.tracker = SortTracker(max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold)
         self.correlation_tracker = DlibCorrelationTracker()
     
-    def update(self, detections: List[DetectedObject], frame_rgb: Mat) -> List[TrackedObject]: 
+    def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
         detected_objs = []
  
-        if detections:
-            detected_objs = detections
-            self.correlation_tracker.start_correlation_tracker(detections, frame_rgb)
-        else:
+        if detections is None:
             detected_objs = self.correlation_tracker.update_correlation_tracker(frame_rgb)
+        elif len(detections) == 0:
+            self.correlation_tracker.correlation_trackers.clear()
+        else:
+            detected_objs = detections
+            self.correlation_tracker.start_correlation_tracker(detected_objs, frame_rgb)
         
         # tracker_inputs: [[x1, y1, x2, y2, score], ... ]
         tracker_inputs = list(map(lambda d : [d.box_start[0], d.box_start[1], d.box_end[0], d.box_end[1], None], detected_objs))
         
         # tracker_outputs: [[x1, y1, x2, y2, id, score], ... ]
-        tracker_outputs = self.tracker.update(np.array(tracker_inputs))
+        if len(tracker_inputs) == 0:
+            tracker_outputs = self.tracker.update()
+        else:
+            tracker_outputs = self.tracker.update(np.array(tracker_inputs))
 
         tracked_objs = list(map(lambda o : TrackedObject(int(o[4])-1, (o[0], o[1]), (o[2], o[3])), tracker_outputs))
 

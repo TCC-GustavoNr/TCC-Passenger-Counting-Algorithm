@@ -77,7 +77,7 @@ class PeopleCounter:
         self.fps = FPS().start()
 
         while not self.stop_required:
-            detected_objects: List[DetectedObject] = []
+            detected_objects: List[DetectedObject] = None
 
             frame = self.videostream.read()[1]
             
@@ -99,7 +99,9 @@ class PeopleCounter:
                 self.video_writer = cv2.VideoWriter(self.output_file, fourcc, 30, (self.video_width, self.video_height), True)
 
             # Check to see if we should run a more computationally expensive object detection method to aid our tracker
-            if self.total_frames % self.skip_frames == 0:              
+            if self.total_frames % self.skip_frames == 0:
+                detected_objects = []
+                
                 # Object Detection
                 boxes, classes, scores = self._tflite_detection(input_data)
 
