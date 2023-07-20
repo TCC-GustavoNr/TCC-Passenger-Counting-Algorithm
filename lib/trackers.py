@@ -25,7 +25,10 @@ class ObjectTracking:
 		self.counted = False # indicate if the object has already been counted or not
 
 class DlibCorrelationTracker:
-    # The correlation_tracker objects instead of performing a redetection, thus achieving a higher frame processing rate
+    """
+    The correlation tracker can be used instead of performing a redetection, thus achieving a higher frame processing rate.
+    """
+
     def __init__(self) -> None:
         self.correlation_trackers = []
 
@@ -53,15 +56,22 @@ class DlibCorrelationTracker:
 
 class AbstractTracker(ABC):
     """
-    @param detections: current frame detection list
-        None   : when there is no detection in the current frame
-        len = 0: when there is detection in the current frame, but no object is found
-        len > 0: when there is detection in the current frame and objects are found
-    @param frame_rgb: current frame rbg matrix (cv2 format)
-    @return: list of tracked objects with updated positions
+    Interface that serves as a basis for implementing object trackers.
     """
+
     @abstractmethod
     def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
+        """
+        Update the tracker, estimating the updated placement of objects.
+
+        @param detections: current frame detection list
+            None   : when there is no detection in the current frame
+            len = 0: when there is detection in the current frame, but no object is found
+            len > 0: when there is detection in the current frame and objects are found
+        @param frame_rgb: current frame rbg matrix (cv2 format)
+        
+        @return: list of tracked objects with updated positions
+        """
         pass
 
 class ConcreteCentroidTracker(AbstractTracker):

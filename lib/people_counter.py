@@ -4,6 +4,7 @@ from enum import Enum
 from typing import List
 from imutils.video import FPS
 from lib.debounce import debounce
+from lib.videostream import AbstractVideoStream
 from lib.updown_event import UpDownEvents, UpDownEventHandler
 from lib.trackers import AbstractTracker, DetectedObject, TrackedObject, ObjectTracking
 from tensorflow.lite.python.interpreter import Interpreter
@@ -11,13 +12,14 @@ from tensorflow.lite.python.interpreter import Interpreter
 class EntranceDirection(Enum):
     TOP_TO_BOTTOM = 1 
     BOTTOM_TO_TOP = 2
+
 class PeopleCounter:
-    def __init__(self, 
-                 model_path=None, 
-                 confidence=0.6, 
-                 num_threads=1, 
-                 videostream=None, 
-                 skip_frames=5, 
+    def __init__(self,
+                 model_path=None,
+                 confidence=0.6,
+                 num_threads=1,
+                 videostream:AbstractVideoStream=None,
+                 skip_frames=5,
                  output_file=None,
                  entrance_border=0.5,
                  entrance_direction:EntranceDirection=EntranceDirection.TOP_TO_BOTTOM,
@@ -79,7 +81,7 @@ class PeopleCounter:
         while not self.stop_required:
             detected_objects: List[DetectedObject] = None
 
-            frame = self.videostream.read()[1]
+            frame = self.videostream.read()
             
             if frame is None:
                 break

@@ -1,8 +1,8 @@
-import cv2
 import argparse
 import multiprocessing
 from lib.people_counter import PeopleCounter, EntranceDirection
 from lib.trackers import ConcreteCentroidTracker, ConcreteSortTracker
+from lib.videostream import VideoStreamFromFile, VideoStreamFromDevice
 from lib.updown_event import UpDownEventHandler
 
 def parse_arguments():
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     args = parse_arguments()
 
-    videostream = cv2.VideoCapture(args["input"])
+    videostream = VideoStreamFromFile(args["input"])
 
     # tracker = ConcreteCentroidTracker(max_disappeared=30, max_distance=50)
 
