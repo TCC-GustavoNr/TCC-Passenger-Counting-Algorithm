@@ -22,13 +22,7 @@ O algoritmo foi baseado em abordagem que combina detecção de pessoas (Single S
 
 - python -m cProfile -s time <prog.py>
 
-- Python 3.7.16
-
-## Referências
-
-- ROSEBROCK, A. Opencv people counter. 2021. Acessado em 25 de janeiro de 2023. Disponível em: <https://www.pyimagesearch.com/2018/08/13/opencv-people-counter/>.
-
-- SUBHAKAR, S. People counting in real time. 2022. Acessado em 25 de janeiro de 2023. Disponível em: <https://github.com/saimj7/People-Counting-in-Real-Time>. 
+- Python 3.7.16 
 
 ## Uso
 
