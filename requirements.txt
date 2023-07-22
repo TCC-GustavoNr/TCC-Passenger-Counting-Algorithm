@@ -1,8 +1,12 @@
-schedule==1.1.0
-numpy==1.22.3
+numpy
+scipy
 argparse==1.4.0
 imutils==0.5.4
 dlib==19.18.0
 opencv-python==4.5.5.64
-scipy==1.8.0
-cmake==3.22.5
+#cmake==3.22.5
+tensorflow==2.10.0
+grpcio-status==1.33.2
+protobuf==3.19.6
+filterpy==1.4.5
+lap==0.4.0
