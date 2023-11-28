@@ -16,10 +16,11 @@ class EntranceDirection(Enum):
 class PeopleCounter:
     def __init__(self,
                  model_path=None,
-                 confidence=0.6,
+                 conf_thresh=0.6,
                  num_threads=1,
                  videostream:AbstractVideoStream=None,
                  skip_frames=5,
+                 log_file=None,
                  output_file=None,
                  entrance_border=0.5,
                  entrance_direction:EntranceDirection=EntranceDirection.TOP_TO_BOTTOM,
@@ -33,8 +34,9 @@ class PeopleCounter:
         # Initializations
         self.fps = None
         self.labels = ["person"]
+        self.log_file = log_file
         self.videostream = videostream
-        self.confidence = confidence
+        self.conf_thresh = conf_thresh
         self.skip_frames = skip_frames
         self.output_file = output_file
         self.object_tracker = object_tracker
@@ -109,7 +111,7 @@ class PeopleCounter:
 
                 # Loop over all detections and draw detection box if confidence is above minimum threshold
                 for i in range(len(scores)):
-                    if ((scores[i] > self.confidence) and (scores[i] <= 1.0)):
+                    if ((scores[i] > self.conf_thresh) and (scores[i] <= 1.0)):
                         # Get bounding box - Interpreter can return coordinates that are outside of image dimensions, 
                         # need to force them to be within image using max() and min()
                         ymin = int(max(1, (boxes[i][0] * self.video_height)))
@@ -165,6 +167,11 @@ class PeopleCounter:
 
             # Update fps counter
             self.fps.update()
+
+            # Update log file
+            if self.log_file is not None:
+                pass
+                # self._update_log_file(tracked_objects)
 
         # Stop fps timer
         self.fps.stop()
@@ -233,6 +240,20 @@ class PeopleCounter:
             self.object_tracking[object_id] = tckb_obj
         
         return count_up, count_down
+
+    def _update_log_file(self, tracked_objects: List[TrackedObject]):
+        try:
+            logline = f'{self.total_frames} {self.get_current_fps()} {self.total_up} {self.total_down} {self.skip_frames} {self.entrance_border} {self.conf_thresh}'
+            
+            for obj in tracked_objects:
+                logline += f', {obj.object_id} {int(obj.box_start[0])} {int(obj.box_start[1])} {int(obj.box_end[0])} {int(obj.box_end[1])}' 
+
+            logfile = open(self.log_file, "a") 
+            logfile.write(logline + '\n')
+            logfile.close()
+        except Exception as e:
+            print(f'failed to write to log file: {e}')
+        
 
     def _draw_bounding_box(self, frame, pmin, pmax, label='person', color=(0, 255, 0)):
         xmin, ymin = pmin

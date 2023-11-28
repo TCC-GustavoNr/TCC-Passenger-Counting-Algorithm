@@ -1,16 +1,14 @@
-# TCC1 - Algoritmo de Contagem Passageiros
-
-Versão experimental do algoritmo de contagem de passageiros.
-
-O algoritmo foi baseado em abordagem que combina detecção de pessoas (Single Shot Detector) e rastreamento de pessoas (Centroid Tracker). Além disso, utiliza como base as implementações desenvolvidas por Rosebrock (2021) e Subhakar (2022) na linguagem de programação Python.
+# Algoritmo de Contagem Passageiros
 
 ## Rodando
-
-- virtualenv venv && source venv/bin/activate 
 
 - virtualenv venv --python="/usr/bin/python3.7" && source venv/bin/activate
 
 - pip install -r requirements.txt
+
+- virtualenv venv && source venv/bin/activate 
+
+-----------------
 
 - python main.py --model mobilenet_ssd/detect.tflite --input videos/inputs/cut_sample_1_4.mp4 --output videos/outputs/output.mp4
 
@@ -20,7 +18,15 @@ O algoritmo foi baseado em abordagem que combina detecção de pessoas (Single S
 
 - python main.py --model mobilenet_ssd/v2/detect.tflite --input ../videos/inputs/pcds_front_2.avi --output ../videos/outputs/output_25.mp4
 
-- python -m cProfile -s time <prog.py>
+- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/1/2016_04_10_18_45_20FrontColor.avi --output ./2016_04_10_18_45_20FrontColor_3.mp4
+
+- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/4/0000000000000000-210713-042508-043003-000001000190.avi --output ./0000000000000000-210713-042508-043003-000001000190_1.mp4
+
+- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/5/C_O_G_2.mkv --output ./C_O_G_2_1.mp4
+
+- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/1/2016_04_10_18_45_20FrontColor.avi
+
+test_ python -m cProfile -s time <prog.py>
 
 - Python 3.7.16 
 
