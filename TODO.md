@@ -24,6 +24,18 @@ Para cada frame:
 
 <frame_number> <fps> <entering-number> <exiting-number> <skip_frames> <entrance_border> <conf_thresh>, <object_id> <xmin> <ymin> <xmax> <ymax> <conf>, ...
 
+--------------------
+
+first: <skip_frames> <entrance_border> <conf_thresh> <tracker>
+
+<frame_number> <fps> <entering-number> <exiting-number>, <object_id> <xmin> <ymin> <xmax> <ymax>, ...
+
+=================================
+Skips
+
+- skip_frames
+- skip_detect
+- skip_ctrack
 
 =================================
 PARAMETROS

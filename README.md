@@ -26,6 +26,8 @@
 
 - python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/1/2016_04_10_18_45_20FrontColor.avi
 
+- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../test_dataset/1/2016_04_10_18_45_20FrontColor.avi
+
 test_ python -m cProfile -s time <prog.py>
 
 - Python 3.7.16 

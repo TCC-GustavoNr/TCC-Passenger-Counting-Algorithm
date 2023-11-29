@@ -182,6 +182,7 @@ class PeopleCounter:
 
         self.log_file_handler.close()
         print('AVG FPS:', sum_fps/self.total_frames)
+        print('Final Count:', self.total_up, self.total_down)
 
     def stop_counting(self):
         self.stop_required = True
@@ -250,7 +251,7 @@ class PeopleCounter:
 
     def _update_log_file(self, tracked_objects: List[TrackedObject]):
         try:
-            logline = f'{self.total_frames} {self.get_current_fps()} {self.total_up} {self.total_down} {self.skip_frames} {self.entrance_border} {self.conf_thresh}'
+            logline = f'{self.total_frames} {self.get_current_fps()} {self.total_up} {self.total_down}'
             
             for obj in tracked_objects:
                 logline += f', {obj.object_id} {int(obj.box_start[0])} {int(obj.box_start[1])} {int(obj.box_end[0])} {int(obj.box_end[1])}' 
