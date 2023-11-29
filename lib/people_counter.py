@@ -73,9 +73,13 @@ class PeopleCounter:
                 event_data = self.updown_events.close_open_event()
                 up_down_handler.handler(event_data)
             self.up_down_event_handler = handler
+        
 
     def start_counting(self):
         self.stop_required = False
+
+        sum_fps = 0
+        self.log_file_handler = open(self.log_file, "a", buffering=-1)
 
         # Start the frames per second throughput estimator
         self.fps = FPS().start()
@@ -168,13 +172,16 @@ class PeopleCounter:
             # Update fps counter
             self.fps.update()
 
+            sum_fps += self.get_current_fps() 
             # Update log file
             if self.log_file is not None:
-                pass
-                # self._update_log_file(tracked_objects)
+                self._update_log_file(tracked_objects)
 
         # Stop fps timer
         self.fps.stop()
+
+        self.log_file_handler.close()
+        print('AVG FPS:', sum_fps/self.total_frames)
 
     def stop_counting(self):
         self.stop_required = True
@@ -248,9 +255,7 @@ class PeopleCounter:
             for obj in tracked_objects:
                 logline += f', {obj.object_id} {int(obj.box_start[0])} {int(obj.box_start[1])} {int(obj.box_end[0])} {int(obj.box_end[1])}' 
 
-            logfile = open(self.log_file, "a") 
-            logfile.write(logline + '\n')
-            logfile.close()
+            self.log_file_handler.write(logline + '\n')
         except Exception as e:
             print(f'failed to write to log file: {e}')
         

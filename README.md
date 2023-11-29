@@ -45,3 +45,21 @@ sort
 
 ct_max_disappeared = max_age
 iou_threshold é uma versao mais inteligente do ct_max_distance
+
+# Tempos
+
+## Notebook 
+
+PCDS
+AVG FPS: 26.011605415860735
+AVG FPS: 25.550612508059316
+
+AVG FPS: 22.87878787878788
+AVG FPS: 27.534493874919406
+AVG FPS: 24.777562862669246
+
+PERUIBE
+AVG FPS: 111.73242604881341
+
+MVIA
+AVG FPS: 48.20506965060516
