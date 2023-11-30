@@ -148,8 +148,6 @@ class StandardSortTracker(AbstractTracker):
 
         tracked_objs = list(map(lambda o : TrackedObject(int(o[4])-1, (o[0], o[1]), (o[2], o[3])), tracker_outputs))
 
-        # print(tracked_objs)
-
         return tracked_objs
 
 class CorrelationSortTracker(AbstractTracker):
