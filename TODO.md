@@ -15,20 +15,10 @@ TODO
 Log
 Para cada frame:
 
-<frame_number> <fps> <entering-number> <exiting-number> <skip_frames> <entrance_border> <conf_thresh>
-<object_id> <xmin> <ymin> <xmax> <ymax> <conf>
+<tracker_info>, <skip_frames>, <num_threads>, <conf_thresh>, <entrance_border>, <entrance_direction>
+<frame_number> <fps> <entering_number> <exiting_number>, <object_id> <xmin> <ymin> <xmax> <ymax>, ...
 ...
-<object_id> <xmin> <ymin> <xmax> <ymax> <conf>
-
---------------------
-
-<frame_number> <fps> <entering-number> <exiting-number> <skip_frames> <entrance_border> <conf_thresh>, <object_id> <xmin> <ymin> <xmax> <ymax> <conf>, ...
-
---------------------
-
-first: <skip_frames> <entrance_border> <conf_thresh> <tracker>
-
-<frame_number> <fps> <entering-number> <exiting-number>, <object_id> <xmin> <ymin> <xmax> <ymax>, ...
+<frame_number> <fps> <entering_number> <exiting_number>, <object_id> <xmin> <ymin> <xmax> <ymax>, ...
 
 =================================
 Skips
@@ -42,8 +32,12 @@ PARAMETROS
 
 # PDCS
 
+## Front
 - skip_frames=10
-- front:  entrance_border=0.65
+- entrance_border=0.65
+- tracker = StandardSortTracker(max_age=60, min_hits=1, iou_threshold=0.3)
+
+## Back
 
 
 # PERUIBE
@@ -55,3 +49,4 @@ PARAMETROS
 
 - skip_frames=10
 - entrance_border=0.50
+- tracker = StandardSortTracker(max_age=30, min_hits=1, iou_threshold=0.2)

@@ -42,7 +42,8 @@ class PeopleCounter:
         self.object_tracker = object_tracker
         self.entrance_border = entrance_border
         self.entrance_direction = entrance_direction
-        self.total_frames = 0
+        self.avg_fps = 0
+        self.count_frames = 0
         self.total_up = 0
         self.total_down = 0
         self.video_width = None
@@ -74,12 +75,15 @@ class PeopleCounter:
                 up_down_handler.handler(event_data)
             self.up_down_event_handler = handler
         
+        # Counter Summary: <tracker_info>, <skip_frames>, <num_threads>, <conf_thresh>, <entrance_border>, <entrance_direction>
+        self.counter_summary = f'{object_tracker} {skip_frames} {num_threads} {conf_thresh} {entrance_border} {entrance_direction}\n'
 
     def start_counting(self):
         self.stop_required = False
 
-        sum_fps = 0
-        self.log_file_handler = open(self.log_file, "a", buffering=-1)
+        # Open log file
+        self.log_file_handler = open(self.log_file, "w", buffering=-1)
+        self.log_file_handler.write(self.counter_summary)
 
         # Start the frames per second throughput estimator
         self.fps = FPS().start()
@@ -108,7 +112,7 @@ class PeopleCounter:
                 self.video_writer = cv2.VideoWriter(self.output_file, fourcc, 30, (self.video_width, self.video_height), True)
 
             # Check to see if we should run a more computationally expensive object detection method to aid our tracker
-            if self.total_frames % self.skip_frames == 0:
+            if self.count_frames % self.skip_frames == 0:
                 detected_objects = []
                 
                 # Object Detection
@@ -129,8 +133,8 @@ class PeopleCounter:
 
                         # Draw object bounding box
                         if self.output_file is not None:
-                            label = f'{self.labels[int(classes[i])]}: {int(scores[i]*100)}%' # Example: 'person: 72%'
-                            self._draw_bounding_box(frame, (xmin, ymin), (xmax, ymax), label)
+                            # label = f'{self.labels[int(classes[i])]}: {int(scores[i]*100)}%' # Example: 'person: 72%'
+                            self._draw_bounding_box(frame, (xmin, ymin), (xmax, ymax))
                         
             # Use the tracker to associate the old object with the newly computed object
             tracked_objects = self.object_tracker.update(detected_objects, image_rgb)
@@ -168,12 +172,13 @@ class PeopleCounter:
                 self.video_writer.write(frame)
 
             # Increment the total number of frames processed
-            self.total_frames += 1
+            self.count_frames += 1
 
             # Update fps counter
             self.fps.update()
-
-            sum_fps += self.get_current_fps() 
+            
+            # Update average fps 
+            self.avg_fps = self.avg_fps + 1.0/self.count_frames * (self.get_current_fps() - self.avg_fps)
 
             # Update log file
             if self.log_file is not None:
@@ -187,8 +192,8 @@ class PeopleCounter:
         
         # Print results
         print('===========================================')
-        print('AVG FPS: ', sum_fps/self.total_frames)
-        print('Count: ', self.total_up, self.total_down)
+        print(f'AVG FPS: {self.avg_fps}')
+        print(f'Count: Up={self.total_up} Down={self.total_down}')
         print('===========================================')
 
     def stop_counting(self):
@@ -258,22 +263,27 @@ class PeopleCounter:
 
     def _update_log_file(self, tracked_objects: List[TrackedObject]):
         try:
-            logline = f'{self.total_frames} {self.get_current_fps()} {self.total_up} {self.total_down}'
+            logline = f'{self.count_frames} {self.get_current_fps()} {self.total_up} {self.total_down}'
             
             for obj in tracked_objects:
-                logline += f', {obj.object_id} {int(obj.box_start[0])} {int(obj.box_start[1])} {int(obj.box_end[0])} {int(obj.box_end[1])}' 
+                logline += f', {obj.object_id} {round(obj.box_start[0])} {round(obj.box_start[1])} {round(obj.box_end[0])} {round(obj.box_end[1])}' 
 
             self.log_file_handler.write(logline + '\n')
         except Exception as e:
             print(f'failed to write to log file: {e}')
         
 
-    def _draw_bounding_box(self, frame, pmin, pmax, label='person', color=(0, 255, 0)):
+    def _draw_bounding_box(self, frame, pmin, pmax, label=None, color=(0, 255, 0)):
         xmin, ymin = pmin
         xmax, ymax = pmax
+
         # Draw bounding box
         cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), color, 2)
-
+        
+        # Skip draw label
+        if label is None:
+            return
+        
         # Draw label
         labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)  # Get font size
 

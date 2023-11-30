@@ -78,8 +78,13 @@ class AbstractTracker(ABC):
 class StandardCentroidTracker(AbstractTracker):
     def __init__(self, max_disappeared=50, max_distance=50) -> None:
         super().__init__()
+        self.max_disappeared = max_disappeared
+        self.max_distance = max_distance
         self.tracker = CentroidTracker(maxDisappeared=max_disappeared, maxDistance=max_distance)
     
+    def __str__(self) -> str:
+        return f'StandardCentroidTracker {self.max_disappeared} {self.max_disappeared}'
+
     def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
         tracker_outputs = OrderedDict()
 
@@ -98,8 +103,13 @@ class StandardCentroidTracker(AbstractTracker):
 class CorrelationCentroidTracker(AbstractTracker):
     def __init__(self, max_disappeared=50, max_distance=50) -> None:
         super().__init__()
+        self.max_disappeared = max_disappeared
+        self.max_distance = max_distance
         self.tracker = CentroidTracker(maxDisappeared=max_disappeared, maxDistance=max_distance)
         self.correlation_tracker = DlibCorrelationTracker()
+
+    def __str__(self) -> str:
+        return f'CorrelationCentroidTracker {self.max_disappeared} {self.max_disappeared}'
 
     def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
         detected_objs = []
@@ -125,7 +135,13 @@ class CorrelationCentroidTracker(AbstractTracker):
 class StandardSortTracker(AbstractTracker):
     def __init__(self, max_age=1, min_hits=3, iou_threshold=0.3) -> None:
         super().__init__()
+        self.max_age = max_age
+        self.min_hits = min_hits
+        self.iou_threshold = iou_threshold
         self.tracker = SortTracker(max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold)
+
+    def __str__(self) -> str:
+        return f'StandardSortTracker {self.max_age} {self.min_hits} {self.iou_threshold}'
 
     def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
         detected_objs = []
@@ -142,20 +158,29 @@ class StandardSortTracker(AbstractTracker):
         
         # tracker_outputs: [[x1, y1, x2, y2, id, score], ... ]
         if len(tracker_inputs) == 0:
-            tracker_outputs = self.tracker.update()
+            self.tracker.update()
         else:
-            tracker_outputs = self.tracker.update(np.array(tracker_inputs))
-
-        tracked_objs = list(map(lambda o : TrackedObject(int(o[4])-1, (o[0], o[1]), (o[2], o[3])), tracker_outputs))
+            self.tracker.update(np.array(tracker_inputs))
+        
+        tracked_objs = []
+        for tracked in self.tracker.trackers:
+            bbox = tracked.get_state()[0]
+            tracked_objs.append(TrackedObject(int(tracked.id), (bbox[0], bbox[1]), (bbox[2], bbox[3])))
 
         return tracked_objs
 
 class CorrelationSortTracker(AbstractTracker):
     def __init__(self, max_age=1, min_hits=3, iou_threshold=0.3) -> None:
         super().__init__()
+        self.max_age = max_age
+        self.min_hits = min_hits
+        self.iou_threshold = iou_threshold
         self.tracker = SortTracker(max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold)
         self.correlation_tracker = DlibCorrelationTracker()
-    
+
+    def __str__(self) -> str:
+        return f'CorrelationSortTracker {self.max_age} {self.min_hits} {self.iou_threshold}'
+
     def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
         detected_objs = []
  
@@ -176,6 +201,6 @@ class CorrelationSortTracker(AbstractTracker):
         else:
             tracker_outputs = self.tracker.update(np.array(tracker_inputs))
 
-        tracked_objs = list(map(lambda o : TrackedObject(int(o[4])-1, (o[0], o[1]), (o[2], o[3])), tracker_outputs))
+        tracked_objs = list(map(lambda o : TrackedObject(int(o[4]), (o[0], o[1]), (o[2], o[3])), tracker_outputs))
 
         return tracked_objs
