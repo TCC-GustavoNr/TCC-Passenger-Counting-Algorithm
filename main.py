@@ -1,9 +1,9 @@
 import argparse
 import multiprocessing
-from lib.people_counter import PeopleCounter, EntranceDirection
-from lib.trackers import ConcreteCentroidTracker, ConcreteSortTracker
-from lib.videostream import VideoStreamFromFile, VideoStreamFromDevice
 from lib.updown_event import UpDownEventHandler
+from lib.people_counter import PeopleCounter, EntranceDirection
+from lib.videostream import VideoStreamFromFile, VideoStreamFromDevice
+from lib.trackers import StandardCentroidTracker, CorrelationCentroidTracker, StandardSortTracker, CorrelationSortTracker
 
 
 def parse_arguments():
@@ -33,11 +33,15 @@ if __name__ == '__main__':
 
     videostream = VideoStreamFromFile(args["input"])
 
-    # tracker = ConcreteCentroidTracker(max_disappeared=30, max_distance=50)
+    # tracker = CorrelationCentroidTracker(max_disappeared=30, max_distance=50)
 
-    # tracker = ConcreteSortTracker(max_age=40, min_hits=5)
+    # tracker = CorrelationSortTracker(max_age=40, min_hits=5)
 
-    tracker = ConcreteSortTracker(max_age=30, min_hits=3)
+    # tracker = CorrelationSortTracker(max_age=30, min_hits=3)
+
+    # tracker = StandardSortTracker(max_age=60, min_hits=1, iou_threshold=0.3)
+
+    tracker = StandardCentroidTracker(max_disappeared=30, max_distance=50)
 
     people_counter = PeopleCounter(
         model_path=args["model"],
@@ -48,7 +52,7 @@ if __name__ == '__main__':
         log_file='./logfile.txt',
         output_file=args["output"],
         object_tracker=tracker,
-        entrance_border=0.50,
+        entrance_border=0.65,
         entrance_direction=EntranceDirection.BOTTOM_TO_TOP,
         up_down_handler=(UpDownEventHandler(handle_up_down_event, 5))
     )

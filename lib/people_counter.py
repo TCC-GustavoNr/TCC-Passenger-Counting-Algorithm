@@ -90,6 +90,7 @@ class PeopleCounter:
             frame = self.videostream.read()
             
             if frame is None:
+                print('Frame is None!')
                 break
 
             # Convert the frame to a blob and pass the blob through the network and obtain the detections
@@ -173,6 +174,7 @@ class PeopleCounter:
             self.fps.update()
 
             sum_fps += self.get_current_fps() 
+
             # Update log file
             if self.log_file is not None:
                 self._update_log_file(tracked_objects)
@@ -180,9 +182,14 @@ class PeopleCounter:
         # Stop fps timer
         self.fps.stop()
 
+        # Close log file
         self.log_file_handler.close()
-        print('AVG FPS:', sum_fps/self.total_frames)
-        print('Final Count:', self.total_up, self.total_down)
+        
+        # Print results
+        print('===========================================')
+        print('AVG FPS: ', sum_fps/self.total_frames)
+        print('Count: ', self.total_up, self.total_down)
+        print('===========================================')
 
     def stop_counting(self):
         self.stop_required = True

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 import dlib
 import numpy as np
 from cv2 import Mat
@@ -74,7 +75,27 @@ class AbstractTracker(ABC):
         """
         pass
 
-class ConcreteCentroidTracker(AbstractTracker):
+class StandardCentroidTracker(AbstractTracker):
+    def __init__(self, max_disappeared=50, max_distance=50) -> None:
+        super().__init__()
+        self.tracker = CentroidTracker(maxDisappeared=max_disappeared, maxDistance=max_distance)
+    
+    def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
+        tracker_outputs = OrderedDict()
+
+        if detections is None:
+            tracker_outputs = self.tracker.objects
+        elif len(detections) >= 0:
+            # tracker_inputs: [(x1, y1, x2, y2), ... ]
+            tracker_inputs = list(map(lambda d : (d.box_start[0], d.box_start[1], d.box_end[0], d.box_end[1]), detections))
+            # tracker_outputs: { key: (centroid(x, y), box((x1, y1),(x2, y2))), ... }
+            tracker_outputs = self.tracker.update(tracker_inputs)    
+                
+        tracked_objs = list(map(lambda o : TrackedObject(int(o[0]), o[1][1][0], o[1][1][1]), tracker_outputs.items()))
+
+        return tracked_objs
+
+class CorrelationCentroidTracker(AbstractTracker):
     def __init__(self, max_disappeared=50, max_distance=50) -> None:
         super().__init__()
         self.tracker = CentroidTracker(maxDisappeared=max_disappeared, maxDistance=max_distance)
@@ -101,7 +122,37 @@ class ConcreteCentroidTracker(AbstractTracker):
 
         return tracked_objs
 
-class ConcreteSortTracker(AbstractTracker):
+class StandardSortTracker(AbstractTracker):
+    def __init__(self, max_age=1, min_hits=3, iou_threshold=0.3) -> None:
+        super().__init__()
+        self.tracker = SortTracker(max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold)
+
+    def update(self, detections: Union[List[DetectedObject], None], frame_rgb: Mat) -> List[TrackedObject]: 
+        detected_objs = []
+ 
+        if detections is None:
+            pass
+        elif len(detections) == 0:
+            pass
+        else:
+            detected_objs = detections
+
+        # tracker_inputs: [[x1, y1, x2, y2, score], ... ]
+        tracker_inputs = list(map(lambda d : [d.box_start[0], d.box_start[1], d.box_end[0], d.box_end[1], None], detected_objs))
+        
+        # tracker_outputs: [[x1, y1, x2, y2, id, score], ... ]
+        if len(tracker_inputs) == 0:
+            tracker_outputs = self.tracker.update()
+        else:
+            tracker_outputs = self.tracker.update(np.array(tracker_inputs))
+
+        tracked_objs = list(map(lambda o : TrackedObject(int(o[4])-1, (o[0], o[1]), (o[2], o[3])), tracker_outputs))
+
+        # print(tracked_objs)
+
+        return tracked_objs
+
+class CorrelationSortTracker(AbstractTracker):
     def __init__(self, max_age=1, min_hits=3, iou_threshold=0.3) -> None:
         super().__init__()
         self.tracker = SortTracker(max_age=max_age, min_hits=min_hits, iou_threshold=iou_threshold)
