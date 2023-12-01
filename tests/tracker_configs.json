@@ -1,0 +1,42 @@
+{
+    "desc": {
+        "trackers": [
+            "StandardCentroidTracker",
+            "CorrelationCentroidTracker",
+            "StandardSortTracker",
+            "CorrelationSortTracker"
+        ]
+    },
+    "configs": {
+        "StandardCentroidTracker": {
+            "name": "StandardCentroidTracker",
+            "params": {
+                "max_disappeared": 50,
+                "max_distance": 50
+            }
+        },
+        "CorrelationCentroidTracker": {
+            "name": "CorrelationCentroidTracker",
+            "params": {
+                "max_disappeared": 30,
+                "max_distance": 50
+            }
+        },
+        "StandardSortTracker": {
+            "name": "StandardSortTracker",
+            "params": {
+                "max_age": 50,
+                "min_hits": 1,
+                "iou_threshold": 0.2
+            }
+        },
+        "CorrelationSortTracker": {
+            "name": "CorrelationSortTracker",
+            "params": {
+                "max_age": 30,
+                "min_hits": 2,
+                "iou_threshold": 0.3
+            }
+        }
+    }
+}

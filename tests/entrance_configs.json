@@ -1,0 +1,26 @@
+{
+    "desc": {
+        "entrance_direction": {
+            "TOP_TO_BOTTOM": 1,
+            "BOTTOM_TO_TOP": 2
+        }
+    },
+    "configs": {
+        "pcds_front": {
+            "entrance_border": 0.65,
+            "entrance_direction": 1
+        },
+        "pcds_back": {
+            "entrance_border": 0.5,
+            "entrance_direction": 1
+        },
+        "peruibe": {
+            "entrance_border": 0.5,
+            "entrance_direction": 1
+        },
+        "mvia": {
+            "entrance_border": 0.5,
+            "entrance_direction": 1
+        }
+    }
+}

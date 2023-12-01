@@ -1,9 +1,9 @@
 import argparse
 import multiprocessing
+import lib.trackers as trackers
 from lib.updown_event import UpDownEventHandler
 from lib.people_counter import PeopleCounter, EntranceDirection
 from lib.videostream import VideoStreamFromFile, VideoStreamFromDevice
-from lib.trackers import StandardCentroidTracker, CorrelationCentroidTracker, StandardSortTracker, CorrelationSortTracker
 
 
 def parse_arguments():
@@ -33,15 +33,15 @@ if __name__ == '__main__':
 
     videostream = VideoStreamFromFile(args["input"])
 
-    # tracker = CorrelationCentroidTracker(max_disappeared=30, max_distance=50)
+    # tracker = trackers.CorrelationCentroidTracker(max_disappeared=30, max_distance=50)
 
-    # tracker = CorrelationSortTracker(max_age=40, min_hits=5)
+    # tracker = trackers.CorrelationSortTracker(max_age=40, min_hits=5)
 
-    # tracker = CorrelationSortTracker(max_age=30, min_hits=3)
+    # tracker = trackers.CorrelationSortTracker(max_age=30, min_hits=3)
 
-    tracker = StandardSortTracker(max_age=30, min_hits=1, iou_threshold=0.2)
+    tracker = trackers.StandardSortTracker(max_age=30, min_hits=1, iou_threshold=0.2)
 
-    # tracker = StandardCentroidTracker(max_disappeared=30, max_distance=50)
+    # tracker = trackers.StandardCentroidTracker(max_disappeared=30, max_distance=50)
 
     people_counter = PeopleCounter(
         model_path=args["model"],
