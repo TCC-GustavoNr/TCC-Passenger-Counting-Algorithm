@@ -1,0 +1,83 @@
+{
+    "desc": {
+        "entrance_config": "entrance_configs.json"
+    },
+    "configs": [
+        {
+            "dataset_type": 0,
+            "dataset_name": "pcds_0",
+            "folder_configs": [
+                {
+                    "folder": "pcds_0_front",
+                    "entrance_config": "pcds_front"
+                },
+                {
+                    "folder": "pcds_0_back",
+                    "entrance_config": "pcds_back"
+                }
+            ]
+        },
+        {
+            "dataset_type": 1,
+            "dataset_name": "pcds_1",
+            "folder_configs": [
+                {
+                    "folder": "pcds_1_front",
+                    "entrance_config": "pcds_front"
+                },
+                {
+                    "folder": "pcds_1_back",
+                    "entrance_config": "pcds_back"
+                }
+            ]
+        },
+        {
+            "dataset_type": 2,
+            "dataset_name": "pcds_2",
+            "folder_configs": [
+                {
+                    "folder": "pcds_2_front",
+                    "entrance_config": "pcds_front"
+                },
+                {
+                    "folder": "pcds_2_back",
+                    "entrance_config": "pcds_back"
+                }
+            ]
+        },
+        {
+            "dataset_type": 3,
+            "dataset_name": "pcds_3",
+            "folder_configs": [
+                {
+                    "folder": "pcds_3_front",
+                    "entrance_config": "pcds_front"
+                },
+                {
+                    "folder": "pcds_3_back",
+                    "entrance_config": "pcds_back"
+                }
+            ]
+        },
+        {
+            "dataset_type": 4,
+            "dataset_name": "peruibe_4",
+            "folder_configs": [
+                {
+                    "folder": "peruibe_4",
+                    "entrance_config": "peruibe"
+                }
+            ]
+        },
+        {
+            "dataset_type": 5,
+            "dataset_name": "mvia_5",
+            "folder_configs": [
+                {
+                    "folder": "mvia_5",
+                    "entrance_config": "mvia"
+                }
+            ]
+        }
+    ]
+}

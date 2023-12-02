@@ -76,7 +76,7 @@ class PeopleCounter:
             self.up_down_event_handler = handler
         
         # Counter Summary: <tracker_info>, <skip_frames>, <num_threads>, <conf_thresh>, <entrance_border>, <entrance_direction>
-        self.counter_summary = f'{object_tracker} {skip_frames} {num_threads} {conf_thresh} {entrance_border} {entrance_direction}\n'
+        self.counter_summary = f'{object_tracker}, {skip_frames}, {num_threads}, {conf_thresh}, {entrance_border}, {entrance_direction}\n'
 
     def start_counting(self):
         self.stop_required = False

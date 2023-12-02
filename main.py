@@ -39,9 +39,9 @@ if __name__ == '__main__':
 
     # tracker = trackers.CorrelationSortTracker(max_age=30, min_hits=3)
 
-    tracker = trackers.StandardSortTracker(max_age=30, min_hits=1, iou_threshold=0.2)
+    # tracker = trackers.StandardSortTracker(max_age=50, min_hits=1, iou_threshold=0.2)
 
-    # tracker = trackers.StandardCentroidTracker(max_disappeared=30, max_distance=50)
+    tracker = trackers.StandardCentroidTracker(max_disappeared=50, max_distance=50)
 
     people_counter = PeopleCounter(
         model_path=args["model"],
@@ -52,13 +52,14 @@ if __name__ == '__main__':
         log_file='./logfile.txt',
         output_file=args["output"],
         object_tracker=tracker,
-        entrance_border=0.50,
+        entrance_border=0.6,
         entrance_direction=EntranceDirection.BOTTOM_TO_TOP,
         up_down_handler=(UpDownEventHandler(handle_up_down_event, 5))
     )
 
     print(tracker)
+
     print("Iniciando contagem...")
-    # people_counter.start_counting()
+    people_counter.start_counting()
     print("Contagem finalizada.")
 

@@ -7,20 +7,20 @@
     },
     "configs": {
         "pcds_front": {
-            "entrance_border": 0.65,
+            "entrance_border": 0.60,
             "entrance_direction": 1
         },
         "pcds_back": {
-            "entrance_border": 0.5,
+            "entrance_border": 0.45,
             "entrance_direction": 1
         },
         "peruibe": {
             "entrance_border": 0.5,
-            "entrance_direction": 1
+            "entrance_direction": 2
         },
         "mvia": {
             "entrance_border": 0.5,
-            "entrance_direction": 1
+            "entrance_direction": 2
         }
     }
 }
