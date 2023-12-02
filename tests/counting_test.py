@@ -245,7 +245,7 @@ def run_test():
                     else:
                         entrance_direction = EntranceDirection.BOTTOM_TO_TOP
 
-                    print(f"  TEST - Skip Frames: {skip} | Tracker Config: {tracker_config_name} | Dataset: {dataset_config['dataset_name']} | Video: {videoname}")
+                    print(f"\tTEST - Skip Frames: {skip} | Tracker Config: {tracker_config_name} | Dataset: {dataset_config['dataset_name']} | Video: {videoname}")
 
                     people_counter = PeopleCounter(
                         model_path=MODEL_PATH,
