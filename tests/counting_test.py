@@ -119,7 +119,7 @@ def get_results_from_log(logfile_path):
 
     return entering, exiting, sum_fps/count_frames
 
-def non_zero(value):
+def non_zero_div(value):
     return value if value != 0 else 1 
 
 def calc_global_metrics(cumulative_metrics):
@@ -133,18 +133,18 @@ def calc_global_metrics(cumulative_metrics):
     global_metrics['avg_fps'] = np.average(cumulative_metrics['fps'])
     global_metrics['std_fps'] = np.std(cumulative_metrics['fps'])
 
-    global_metrics['entering']['precision'] = cumulative_metrics['entering']['tp'] / non_zero(cumulative_metrics['entering']['tp'] + cumulative_metrics['entering']['fp'])
-    global_metrics['entering']['recall'] = cumulative_metrics['entering']['tp'] / non_zero(cumulative_metrics['entering']['tp'] + cumulative_metrics['entering']['fn'])
+    global_metrics['entering']['precision'] = cumulative_metrics['entering']['tp'] / non_zero_div(cumulative_metrics['entering']['tp'] + cumulative_metrics['entering']['fp'])
+    global_metrics['entering']['recall'] = cumulative_metrics['entering']['tp'] / non_zero_div(cumulative_metrics['entering']['tp'] + cumulative_metrics['entering']['fn'])
     
-    global_metrics['exiting']['precision'] = cumulative_metrics['exiting']['tp'] / non_zero(cumulative_metrics['exiting']['tp'] + cumulative_metrics['exiting']['fp'])
-    global_metrics['exiting']['recall'] = cumulative_metrics['exiting']['tp'] / non_zero(cumulative_metrics['exiting']['tp'] + cumulative_metrics['exiting']['fn'])
+    global_metrics['exiting']['precision'] = cumulative_metrics['exiting']['tp'] / non_zero_div(cumulative_metrics['exiting']['tp'] + cumulative_metrics['exiting']['fp'])
+    global_metrics['exiting']['recall'] = cumulative_metrics['exiting']['tp'] / non_zero_div(cumulative_metrics['exiting']['tp'] + cumulative_metrics['exiting']['fn'])
     
     global_metrics['tp'] = cumulative_metrics['entering']['tp'] + cumulative_metrics['exiting']['tp']
     global_metrics['fp'] = cumulative_metrics['entering']['fp'] + cumulative_metrics['exiting']['fp']
     global_metrics['fn'] = cumulative_metrics['entering']['fn'] + cumulative_metrics['exiting']['fn']
     
-    global_metrics['precision'] = global_metrics['tp'] / non_zero(global_metrics['tp'] + global_metrics['fp'])
-    global_metrics['recall'] = global_metrics['tp'] / non_zero(global_metrics['tp'] + global_metrics['fn'])
+    global_metrics['precision'] = global_metrics['tp'] / non_zero_div(global_metrics['tp'] + global_metrics['fp'])
+    global_metrics['recall'] = global_metrics['tp'] / non_zero_div(global_metrics['tp'] + global_metrics['fn'])
     
     return global_metrics
 
