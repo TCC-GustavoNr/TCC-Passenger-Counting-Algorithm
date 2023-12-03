@@ -15,7 +15,7 @@ def parse_arguments():
                     help="path to input video file")
     ap.add_argument("-o", "--output", type=str,
                     help="path to output video file (optional)")
-    ap.add_argument("-c", "--confidence", type=float, default=0.9,
+    ap.add_argument("-c", "--conf-thresh", type=float, default=0.9,
                     help="minimum probability to filter weak detections")
     ap.add_argument("-s", "--skip-frames", type=int, default=15,
                     help="number of skip frames between detections")
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     people_counter = PeopleCounter(
         model_path=args["model"],
-        conf_thresh=args["confidence"],
+        conf_thresh=args["conf_thresh"],
         num_threads=multiprocessing.cpu_count(),
         videostream=videostream,
         skip_frames=args["skip_frames"],

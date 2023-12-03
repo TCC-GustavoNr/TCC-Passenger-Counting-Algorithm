@@ -1,78 +1,87 @@
 # Algoritmo de Contagem Passageiros
 
-## Rodando
+## Dependências de SO
 
-- virtualenv venv --python="/usr/bin/python3.7" && source venv/bin/activate
+- Python 3.7.x (3.7.16) 
+- virtualenv
+- libboost-all-dev
+- libgtk-3-dev
+- build-essential
+- cmake
 
-- pip install -r requirements.txt
+## Instalação
 
-- virtualenv venv && source venv/bin/activate 
+Crie um ambiente python com o virtualenv:
+```
+virtualenv venv --python="/usr/bin/python3.7"
+```
 
------------------
+Ative o ambiente criado:
+```
+source venv/bin/activate
+```
 
-- python main.py --model mobilenet_ssd/detect.tflite --input videos/inputs/cut_sample_1_4.mp4 --output videos/outputs/output.mp4
+Instale as dependências:
+```
+pip install -r requirements.txt
+```
 
-- python main.py --model mobilenet_ssd/detect.tflite --skip-frames 2 --input videos/inputs/sample_2.mkv --output videos/outputs/output_4.mp4
+## Execução 
 
-- python main.py --model mobilenet_ssd/detect.tflite --input ../videos/inputs/cut_sample_1_4.mp4 --output ../videos/outputs/output_8.mp4
+### Parâmetros
 
-- python main.py --model mobilenet_ssd/v2/detect.tflite --input ../videos/inputs/pcds_front_2.avi --output ../videos/outputs/output_25.mp4
+|Parâmetro|Descrição|Obrigatório|Default|
+|---------|---------|-----------|-------|
+|--model|Caminho do modelo .tflite de dectecção de pessoas.|Sim|-|
+|--conf-thresh|Limite mínimo de confiança para as detecções realizadas.|Não|0.9|
+|--skip-frames|Quantidade de frames que devem ser ignorados antes de realizar uma nova detecção.|Não|15|
+|--input|Caminho do vídeo de entrada ou número do dispositivo(câmera) conectado.|Sim|-|
+|--output|Caminho do vídeo com os resultados de processamento. |Não|-|
+|--log-file|Caminho do arquivo de logs de processamento.|Não|./logs/\<data-hora\>.txt|
 
-- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/1/2016_04_10_18_45_20FrontColor.avi --output ./2016_04_10_18_45_20FrontColor_3.mp4
+### Comando
 
-- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/4/0000000000000000-210713-042508-043003-000001000190.avi --output ./0000000000000000-210713-042508-043003-000001000190_1.mp4
+Com o ambiente ativado, execute o comando a seguir para iniciar o programa de contagem:
+```
+python main.py --model <value> --conf-thresh <value> --skip-frames <value> --input <value> --output <value> --log-file <value> 
+```
 
-- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/5/C_O_G_2.mkv --output ./C_O_G_2_1.mp4
+## Profiling
 
-- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/1/2016_04_10_18_45_20FrontColor.avi
-
-- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../test_dataset/1/2016_04_10_18_45_20FrontColor.avi
-
-- python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/pcds_0_back/2016_04_09_21_50_15BackColor.avi --output ./2016_04_09_21_50_15BackColor.avi
-
-python main.py --skip-frames 10 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/pcds_1_front/2016_04_10_18_45_20FrontColor.avi --output ./2016_04_10_18_45_20FrontColor.avi
-
-python main.py --skip-frames 1 --model mobilenet_ssd/v2/detect.tflite --input ../../test_dataset/pcds_0_front/2015_05_08_08_22_58FrontColor.avi --output ./2015_05_08_08_22_58FrontColor.avi
-
+```
 test_ python -m cProfile -s time <prog.py>
+```
 
-- Python 3.7.16 
+## Algoritmos de Rastreamento de Objetos
 
-## Uso
+### Centroid Tracker
 
-centroid
-	update: boxes
-	ct_max_disappeared =>
-	ct_max_distance    =>
+#### Parâmetros
 
-sort
-	update: boxes, scores
-	max_age=1  	  => Maximum number of frames to keep alive a track without associated detections.	
-	min_hits=3	  => Minimum number of associated detections before track is initialised.
-	iou_threshold=0.3 => Minimum IOU for match.
+|Parâmetro|Descrição|
+|---------|---------|
+|max_disappeared|Número máximo de frames para manter vivo um objeto rastreado sem detecções associadas.|
+|max_distance|Distância máxima de match utilizado na etapa de associação de objetos.|
 
-ct_max_disappeared = max_age
-iou_threshold é uma versao mais inteligente do ct_max_distance
+### SORT Tracker
 
-# Tempos
+#### Parâmetros
 
-## Notebook 
+|Parâmetro|Descrição|
+|---------|---------|
+|max_age|Número máximo de frames para manter vivo um objeto rastreado sem detecções associadas.|
+|min_hits|Número mínimo de detecções associadas antes da inicialização do rastreamento.|
+|iou_threshold|IOU mínimo de match utilizado na etapa de associação de objetos.|
 
-PCDS
-AVG FPS: 26.011605415860735
-AVG FPS: 25.550612508059316
+Observações:
+- O max_disappeared do Centroid Tracker equivale ao max_age do SORT Tracker.
+- O iou_threshold do SORT é uma versão mais sofisticada do max_distance do Centroid Tracker.
 
-AVG FPS: 22.87878787878788
-AVG FPS: 27.534493874919406
-AVG FPS: 24.777562862669246
+## Formato do Arquivo de Logs
 
-PERUIBE
-AVG FPS: 111.73242604881341
-
-MVIA
-AVG FPS: 48.20506965060516
-
-# Skips
-
-0 5 10 15 20 25 30
-
+```
+<tracker_info>, <skip_frames>, <num_threads>, <conf_thresh>, <entrance_border>, <entrance_direction>
+<frame_number> <fps> <entering_number> <exiting_number>, <object_id> <xmin> <ymin> <xmax> <ymax>, ...
+...
+<frame_number> <fps> <entering_number> <exiting_number>, <object_id> <xmin> <ymin> <xmax> <ymax>, ...
+```

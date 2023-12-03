@@ -3,7 +3,6 @@ import os
 sys.path.append("..")
 import json
 import copy
-import itertools
 import numpy as np
 import multiprocessing
 from time import gmtime, strftime, sleep

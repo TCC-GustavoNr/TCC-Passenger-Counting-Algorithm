@@ -1,0 +1,30 @@
+========================================
+FPS Metrics
+FPS: [45.07282415630551, 49.55020080321285, 52.6790780141844, 56.88061797752809, 61.27405857740586, 61.42190016103059, 68.0943820224719, 41.803220035778175]
+AVG FPS: 54.59703521848967
+STD FPS: 8.382242719903209
+========================================
+Entering Metrics
+Precision: 0.9545454545454546
+Recall: 0.9545454545454546
+True Positive: 21
+False Positive: 1
+False Negative: 1
+Ground Truth: 22
+========================================
+Exiting Metrics
+Precision: 1.0
+Recall: 0.5714285714285714
+True Positive: 16
+False Positive: 0
+False Negative: 12
+Ground Truth: 28
+========================================
+Entering & Exiting Metrics (Total Counting)
+Precision: 0.9736842105263158
+Recall: 0.74
+True Positive: 37
+False Positive: 1
+False Negative: 13
+Ground Truth: 50
+========================================
