@@ -20,7 +20,7 @@ DATASET_CONFIGS_PATH = "./dataset_configs.json"
 TRACKER_CONFIGS_PATH = "./tracker_configs.json"
 ENTRANCE_CONFIGS_PATH = "./entrance_configs.json"
 
-TEST_SKIP_FRAMES = [1, 5, 15, 20, 25, 30]
+TEST_SKIP_FRAMES = [1, 5, 10, 15, 20, 25, 30]
 
 def build_tracker(tracker_config):
     tracker = None
