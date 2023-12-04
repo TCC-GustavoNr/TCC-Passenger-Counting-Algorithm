@@ -3,7 +3,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-RESULTS_JSON_DIR = './runs/2023_12_02-22_09_03'
+RESULTS_JSON_DIR = './runs/2023_12_03-03_53_37'
 GLOBAL_METRICS = ['precision', 'recall', 'avg_fps']
 
 def plot_metrics():
@@ -29,11 +29,17 @@ def plot_metrics():
     
     for metric in GLOBAL_METRICS:
         maxy = -1
+        miny = 10000
         for trackerconf in tracker_metrics:
             plt.plot(skip_frames, tracker_metrics[trackerconf][metric], label=trackerconf)
             maxy = max(maxy, max(tracker_metrics[trackerconf][metric]))
+            miny = min(miny, max(tracker_metrics[trackerconf][metric]))
         if metric == 'avg_fps':
-            plt.yticks(np.arange(0, maxy+30, 30))
+            plt.yticks(np.arange(0, maxy+10, 10))
+        if metric == 'recall':
+            plt.yticks(np.arange(0, 1.1, 0.1))
+        if metric == 'precision':
+            plt.yticks(np.arange(0.75, 1.025, 0.025))
         plt.xlabel("Skip Frames")
         plt.ylabel(metric.capitalize())
         plt.legend()
