@@ -34,16 +34,18 @@ pip install -r requirements.txt
 |---------|---------|-----------|-------|
 |--model|Caminho do modelo .tflite de dectecção de pessoas.|Sim|-|
 |--conf-thresh|Limite mínimo de confiança para as detecções realizadas.|Não|0.9|
-|--skip-frames|Quantidade de frames que devem ser ignorados antes de realizar uma nova detecção.|Não|15|
+|--skip-frames|Quantidade de frames que devem ser ignorados antes de realizar uma nova detecção.|Não|10|
 |--input|Caminho do vídeo de entrada ou número do dispositivo(câmera) conectado.|Sim|-|
 |--output|Caminho do vídeo com os resultados de processamento. |Não|-|
-|--log-file|Caminho do arquivo de logs de processamento.|Não|./logs/\<data-hora\>.txt|
+|--log-file|Caminho do arquivo de logs de processamento.|Não|logs/\<data-hora\>.txt|
+|--entrance-config|Caminho do arquivo de configuração da porta de entrada/saída.|Sim|configs/entrance_config.json|
+|--tracker-config|Caminho do arquivo de configuração do rastreador de objetos.|Sim|configs/tracker_config.json|
 
 ### Comando
 
 Com o ambiente ativado, execute o comando a seguir para iniciar o programa de contagem:
 ```
-python main.py --model <value> --conf-thresh <value> --skip-frames <value> --input <value> --output <value> --log-file <value> 
+python main.py --model <value> --conf-thresh <value> --skip-frames <value> --input <value> --output <value> --log-file <value> --entrance-config <value> --tracker-config <value>
 ```
 
 ## Profiling

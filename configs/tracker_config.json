@@ -1,0 +1,18 @@
+{
+    "desc": {
+        "trackers": [
+            "StandardCentroidTracker",
+            "CorrelationCentroidTracker",
+            "StandardSortTracker",
+            "CorrelationSortTracker"
+        ]
+    },
+    "config": {
+        "name": "StandardSortTracker",
+        "params": {
+            "max_age": 50,
+            "min_hits": 1,
+            "iou_threshold": 0.2
+        }
+    }
+}

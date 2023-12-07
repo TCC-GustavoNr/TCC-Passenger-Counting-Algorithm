@@ -1,0 +1,12 @@
+{
+    "desc": {
+        "entrance_direction": {
+            "TOP_TO_BOTTOM": 1,
+            "BOTTOM_TO_TOP": 2
+        }
+    },
+    "config": {
+        "entrance_border": 0.5,
+        "entrance_direction": 1
+    }
+}
