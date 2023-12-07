@@ -47,28 +47,24 @@ class VideoStreamFromDevice(AbstractVideoStream):
     def __init__(self, device) -> None:
         self.cap = cv2.VideoCapture(device)
         self.q = queue.Queue()
-        self.thr = threading.Thread(target=self._reader)
-        self.thr.daemon = True
-        self.thr.start()
+        t = threading.Thread(target=self._reader)
+        t.daemon = True
+        t.start()
 
     def _reader(self) -> None:
         while True:
-            ret, frame = self.cap.read()  # read the frames
+            ret, frame = self.cap.read() # read the frames
             if not ret:
-                # close the thread - device is not working
                 break
             if not self.q.empty():
                 try:
                     self.q.get_nowait()
                 except queue.Empty:
                     pass
-            self.q.put(frame)  # store them in a queue (instead of the buffer)
+            self.q.put(frame) # store them in a queue (instead of the buffer)
 
     def read(self) -> Union[cv2.UMat, None]:
-        try:
-            return self.q.get(block=False)
-        except queue.Empty:
-            return None
+        return self.q.get()
 
     def release(self) -> None:
-        return self.cap.release()
+        return self.cap.release() 
