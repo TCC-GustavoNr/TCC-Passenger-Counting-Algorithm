@@ -1,5 +1,7 @@
+import os
 import json
 import argparse
+import threading
 import multiprocessing
 from time import gmtime, strftime, sleep
 import lib.trackers as libtrackers
@@ -7,6 +9,18 @@ from lib.updown_event import UpDownEventHandler
 from lib.people_counter import PeopleCounter, EntranceDirection
 from lib.videostream import VideoStreamFromFile, VideoStreamFromDevice
 
+class Repeat(threading.Timer):
+    def run(self):
+        while not self.finished.wait(self.interval):
+            self.function(*self.args, **self.kwargs)
+
+def check_stop_required(*args):
+    stop_event = args[0]
+    STOP_FILE_PATH = './stop_file.txt'
+    print("Checking if stop is required...")
+    if os.path.isfile(STOP_FILE_PATH):
+        stop_event.set()
+        print("Set Stop Event: Stop file setted.")
 
 def parse_arguments():
     default_logfile = 'logs/' + strftime("%Y_%m_%d-%H_%M_%S", gmtime()) + '.txt'
@@ -87,12 +101,12 @@ def handle_up_down_event(data):
 
 
 if __name__ == '__main__':
-
+    
     args = parse_arguments()
 
     videostream = None
     if args["input"].isdigit():
-        videostream = VideoStreamFromDevice(args["input"])
+        videostream = VideoStreamFromDevice(f"/dev/video{args['input']}")
     else:
         videostream = VideoStreamFromFile(args["input"])
 
@@ -100,10 +114,16 @@ if __name__ == '__main__':
 
     entrance_config = load_entrance_config(args["entrance_config"])
 
+    stop_event = threading.Event()
+
+    check_stop_timer = Repeat(5, check_stop_required, [stop_event])
+    check_stop_timer.start()
+
     people_counter = PeopleCounter(
         model_path=args["model"],
         conf_thresh=args["conf_thresh"],
         num_threads=multiprocessing.cpu_count(),
+        stop_event=stop_event,
         videostream=videostream,
         skip_frames=args["skip_frames"],
         log_file=args["log_file"],
@@ -119,3 +139,5 @@ if __name__ == '__main__':
     print("Iniciando contagem...")
     people_counter.start_counting()
     print("Contagem finalizada.")
+    check_stop_timer.cancel()
+    print("Exiting...")

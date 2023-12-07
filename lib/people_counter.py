@@ -1,4 +1,5 @@
 import cv2
+import threading
 import numpy as np
 from enum import Enum
 from typing import List
@@ -18,6 +19,7 @@ class PeopleCounter:
                  model_path=None,
                  conf_thresh=0.6,
                  num_threads=1,
+                 stop_event: threading.Event=None,
                  videostream:AbstractVideoStream=None,
                  skip_frames=5,
                  log_file=None,
@@ -35,6 +37,7 @@ class PeopleCounter:
         self.fps = None
         self.labels = ["person"]
         self.log_file = log_file
+        self.stop_event = stop_event
         self.videostream = videostream
         self.conf_thresh = conf_thresh
         self.skip_frames = skip_frames
@@ -49,7 +52,6 @@ class PeopleCounter:
         self.video_width = None
         self.video_height = None
         self.video_writer = None
-        self.stop_required = False
         self.updown_events = UpDownEvents()
         self.object_tracking = {} # ObjectTracking
         
@@ -79,8 +81,6 @@ class PeopleCounter:
         self.counter_summary = f'{object_tracker}, {skip_frames}, {num_threads}, {conf_thresh}, {entrance_border}, {entrance_direction}\n'
 
     def start_counting(self):
-        self.stop_required = False
-
         # Open log file
         self.log_file_handler = open(self.log_file, "w", buffering=-1)
         self.log_file_handler.write(self.counter_summary)
@@ -88,7 +88,8 @@ class PeopleCounter:
         # Start the frames per second throughput estimator
         self.fps = FPS().start()
 
-        while not self.stop_required:
+        while not self.stop_event.is_set():
+
             detected_objects: List[DetectedObject] = None
 
             frame = self.videostream.read()
@@ -187,6 +188,9 @@ class PeopleCounter:
         # Stop fps timer
         self.fps.stop()
 
+        # Release videostream
+        self.videostream.release()
+
         # Close log file
         self.log_file_handler.close()
         
@@ -195,9 +199,6 @@ class PeopleCounter:
         print(f'AVG FPS: {self.avg_fps}')
         print(f'Count: Up={self.total_up} Down={self.total_down}')
         print('===========================================')
-
-    def stop_counting(self):
-        self.stop_required = True
 
     def get_current_fps(self):
         fps = None
