@@ -46,6 +46,7 @@ class VideoStreamFromDevice(AbstractVideoStream):
 
     def __init__(self, device) -> None:
         self.cap = cv2.VideoCapture(device)
+        self.cap.set(cv2.CAP_PROP_FPS,30)
         self.q = queue.Queue()
         t = threading.Thread(target=self._reader)
         t.daemon = True
